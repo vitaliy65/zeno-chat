@@ -1,10 +1,6 @@
-
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { AuthUser, LoginPayload, RegisterPayload, UserStatus } from "../../types/user";
-import { auth, db } from "../../lib/firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import type { AppDispatch } from "../store";
+import type { AuthUser, UserStatus } from "../../types/user";
+import { loginUser, logout, registerUser, tryAutoLogin } from "./UserAsyncThunks";
 
 interface UserState {
     user: AuthUser | null;
@@ -25,107 +21,76 @@ const userSlice = createSlice({
         setUser(state, action: PayloadAction<AuthUser | null>) {
             state.user = action.payload;
         },
-        setLoading(state, action: PayloadAction<boolean>) {
-            state.loading = action.payload;
-        },
-        setError(state, action: PayloadAction<string | null>) {
-            state.error = action.payload;
-        },
-        logoutUser(state) {
-            state.user = null;
-        },
         updateStatus(state, action: PayloadAction<UserStatus>) {
             if (state.user) {
                 state.user.status = action.payload;
             }
         }
+    },
+    extraReducers: (builder) => {
+        builder
+            // --------------- loginUser ---------------
+            .addCase(loginUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(loginUser.fulfilled, (state, action: PayloadAction<AuthUser>) => {
+                state.user = action.payload;
+                state.loading = false;
+                state.error = null;
+            })
+            .addCase(loginUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload ?? "Login failed";
+            })
+
+            // --------------- registerUser ---------------
+            .addCase(registerUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(registerUser.fulfilled, (state, action: PayloadAction<AuthUser>) => {
+                state.user = action.payload;
+                state.loading = false;
+                state.error = null;
+            })
+            .addCase(registerUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload ?? "Registration failed";
+            })
+
+            // --------------- logout ---------------
+            .addCase(logout.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(logout.fulfilled, (state) => {
+                state.user = null;
+                state.loading = false;
+                state.error = null;
+            })
+            .addCase(logout.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload ?? "Logout failed";
+            })
+
+            // --------------- tryAutoLogin ---------------
+            .addCase(tryAutoLogin.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(tryAutoLogin.fulfilled, (state, action: PayloadAction<AuthUser | null>) => {
+                state.user = action.payload;
+                state.loading = false;
+                state.error = null;
+            })
+            .addCase(tryAutoLogin.rejected, (state, action) => {
+                state.user = null;
+                state.loading = false;
+                state.error = action.payload ?? "Auto login failed";
+            });
     }
 });
 
-// Thunks
-
-export const loginUser =
-    (payload: LoginPayload) =>
-        async (dispatch: AppDispatch): Promise<void> => {
-            dispatch(setLoading(true));
-            dispatch(setError(null));
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, payload.email, payload.password);
-                const user = userCredential.user;
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (!userDoc.exists()) throw new Error("User data not found");
-                const userData = userDoc.data();
-                dispatch(
-                    setUser({
-                        id: user.uid,
-                        username: userData?.username || "",
-                        email: user.email ?? "",
-                        avatarUrl: userData?.avatarUrl,
-                        status: userData?.status ?? "offline",
-                        lastSeenAt: userData?.lastSeenAt ?? "",
-                        createdAt: userData?.createdAt ?? "",
-                    })
-                );
-            } catch (error) {
-                if (error instanceof Error) {
-                    dispatch(setError(error.message || "Login failed"));
-                } else {
-                    dispatch(setError("Login failed"));
-                }
-            } finally {
-                dispatch(setLoading(false));
-            }
-        };
-
-export const registerUser =
-    (payload: RegisterPayload) =>
-        async (dispatch: AppDispatch): Promise<void> => {
-            dispatch(setLoading(true));
-            dispatch(setError(null));
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, payload.email, payload.password);
-                const user = userCredential.user;
-                const createdAt = new Date().toISOString();
-                const authUser: AuthUser = {
-                    id: user.uid,
-                    username: payload.username,
-                    email: payload.email,
-                    createdAt,
-                };
-                await setDoc(doc(db, "users", user.uid), {
-                    username: payload.username,
-                    createdAt,
-                    email: payload.email,
-                    status: "online"
-                });
-                dispatch(setUser(authUser));
-            } catch (error) {
-                if (error instanceof Error) {
-                    dispatch(setError(error.message || "Registration failed"));
-                } else {
-                    dispatch(setError("Registration failed"));
-                }
-            } finally {
-                dispatch(setLoading(false));
-            }
-        };
-
-export const logout = () => async (dispatch: AppDispatch): Promise<void> => {
-    dispatch(setLoading(true));
-    dispatch(setError(null));
-    try {
-        await signOut(auth);
-        dispatch(logoutUser());
-    } catch (error) {
-        if (error instanceof Error) {
-            dispatch(setError(error.message || "Logout failed"));
-        } else {
-            dispatch(setError("Logout failed"));
-        }
-    } finally {
-        dispatch(setLoading(false));
-    }
-};
-
-export const { setUser, setLoading, setError, logoutUser } = userSlice.actions;
+export const { setUser } = userSlice.actions;
 export default userSlice.reducer;
