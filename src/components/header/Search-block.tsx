@@ -1,14 +1,41 @@
+import { useAppDispatch } from "@/store/hooks";
+import { findUsersByUsername } from "@/store/slices/user/UserAsyncThunks";
 import { Search } from "lucide-react";
+import { KeyboardEvent, useState } from "react";
+import UsersSearchList from "./UsersSearchList";
+import { User } from "@/types/user";
 
 export default function SearchBlock() {
+    const [searchUser, setSearchChat] = useState("");
+    const [findedUsers, setFindedUsers] = useState<User[]>([]);
+
+    const dispatch = useAppDispatch();
+
+    const handleChatSearch = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.code === "Enter" && searchUser.length != 0) {
+            dispatch(findUsersByUsername(searchUser)).then(res => { setFindedUsers(res.payload as User[]); console.log(res.payload) });
+        }
+    }
+
+    const handleChatSearchClick = (e: React.MouseEvent<HTMLInputElement>) => {
+        if (searchUser.length != 0) {
+            dispatch(findUsersByUsername(searchUser)).then(res => { setFindedUsers(res.payload as User[]); console.log(res.payload) });
+        }
+    }
+
     return (
-        <div className='flex bg-background-second/50 min-w-2xs p-1 rounded-full shadow-custom-md-inset gap-2'>
-            <span className='bg-background-second h-full aspect-square rounded-full flex justify-center items-center shadow-custom-sm button-interaction'><Search /></span>
+        <div className='relative flex bg-background-second/50 min-w-2xs p-1 rounded-full shadow-custom-md-inset gap-2'>
+            <span className='bg-background-second h-full aspect-square rounded-full flex justify-center items-center shadow-custom-sm button-interaction'
+                onClick={handleChatSearchClick}><Search /></span>
             <input
                 type="text"
                 className="w-full focus:outline-none focus:ring-0"
+                value={searchUser}
+                onChange={(e) => { setSearchChat(e.target.value) }}
+                onKeyDown={handleChatSearch}
                 placeholder="Search..."
             />
+            <UsersSearchList users={findedUsers} />
         </div>
     )
 }

@@ -1,4 +1,5 @@
-import AuthCheck from "@/components/AuthCheck";
+
+import AuthCheck from "@/components/auth/AuthCheck";
 import ChatContainer from "@/components/ChatContainer";
 import ChatList from "@/components/ChatList";
 import Header from "@/components/Header";

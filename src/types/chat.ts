@@ -4,7 +4,7 @@ import { User } from "./user";
 export interface Chat {
     id: string;
     participantIds: [string, string];
-    lastMessage?: Message;
+    messages?: Message[];
     updatedAt: string;
 }
 

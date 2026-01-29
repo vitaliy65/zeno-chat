@@ -1,9 +1,10 @@
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { AuthUser, LoginPayload, RegisterPayload } from "../../types/user";
-import { auth, db } from "../../lib/firebase";
+import type { AuthUser, LoginPayload, RegisterPayload, User } from "../../../types/user";
+import { auth, db } from "../../../lib/firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { FirebaseError } from "firebase/app";
 
 export const loginUser = createAsyncThunk<
     AuthUser, // return type on fulfilled
@@ -28,8 +29,8 @@ export const loginUser = createAsyncThunk<
                 createdAt: userData?.createdAt ?? "",
             } as AuthUser;
         } catch (error) {
-            if (error instanceof Error) {
-                return rejectWithValue(error.message || "Login failed");
+            if (error instanceof FirebaseError) {
+                return rejectWithValue(error.code || "Login failed");
             }
             return rejectWithValue("Login failed");
         }
@@ -61,8 +62,8 @@ export const registerUser = createAsyncThunk<
             });
             return authUser;
         } catch (error) {
-            if (error instanceof Error) {
-                return rejectWithValue(error.message || "Registration failed");
+            if (error instanceof FirebaseError) {
+                return rejectWithValue(error.code || "Registration failed");
             }
             return rejectWithValue("Registration failed");
         }
@@ -101,8 +102,8 @@ export const tryAutoLogin = createAsyncThunk<
 });
 
 export const logout = createAsyncThunk<
-    void, // return type
-    void, // payload
+    void,
+    void,
     { rejectValue: string }
 >(
     "user/logout",
@@ -115,6 +116,39 @@ export const logout = createAsyncThunk<
                 return rejectWithValue(error.message || "Logout failed");
             }
             return rejectWithValue("Logout failed");
+        }
+    }
+);
+
+export const findUsersByUsername = createAsyncThunk<
+    User[],
+    string,
+    { rejectValue: string }
+>(
+    "user/findUsersByUsername",
+    async (username, { rejectWithValue }) => {
+        try {
+            const usersRef = collection(db, "users");
+            const searchUsername = username;
+
+            const q = query(usersRef, where("username", "==", searchUsername));
+
+            const querySnapshot = await getDocs(q);
+            const results: User[] = [];
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                results.push({
+                    id: docSnap.id,
+                    username: data.username || "",
+                    avatarUrl: data.avatarUrl,
+                    status: data.status || "offline",
+                    lastSeenAt: data.lastSeenAt || "",
+                    createdAt: data.createdAt || "",
+                });
+            });
+            return results;
+        } catch (error) {
+            return rejectWithValue("Search failed");
         }
     }
 );
