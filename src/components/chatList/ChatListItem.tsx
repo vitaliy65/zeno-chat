@@ -43,7 +43,7 @@ export function ChatListItem({ preview, selected = false, onClick }: ChatListIte
             ref={itemRef}
             className={cn(`flex chat-list-item w-full h-14 items-center p-2 gap-2 bg-background-second/50 
                 rounded-full shadow-custom-md cursor-pointer select-none`,
-                selected ? "outline-3 outline-accent-bg transition-all duration-100" : "outline-0 outline-none")
+                selected ? "outline-3 outline-accent-bg" : "outline-0 outline-none")
             }
             onMouseEnter={() => animate(1.03, 0.1, "power2.out")}
             onMouseLeave={() => animate(1, 0.1, "power2.inOut")}

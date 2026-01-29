@@ -3,11 +3,11 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { fetchChatPreviews } from "@/store/slices/chat/ChatAsyncThunks";
-import { setSelectedChatId } from "@/store/slices/chat/ChatSlice";
+import { fetchChatPreviews, fetchChats } from "@/store/slices/chat/ChatAsyncThunks";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { ChatListItem } from "./chatList/ChatListItem";
 import ChatListItemMock from "./mock/ChatListItemMock";
+import { setSelectedChat } from "@/store/slices/chat/ChatSlice";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,14 +19,17 @@ export default function ChatList() {
 
     const currentUserId = useAppSelector((state) => state.user.user?.id);
     const loading = useAppSelector((state) => state.chat.loading);
+    const chats = useAppSelector((state) => state.chat.chats);
     const chatPreviews = useAppSelector((state) => state.chat.chatPreviews);
-    const selectedChatId = useAppSelector((state) => state.chat.selectedChatId);
+    const selectedChat = useAppSelector((state) => state.chat.selectedChat);
 
     useEffect(() => {
         if (currentUserId) {
+            dispatch(fetchChats({ userId: currentUserId }));
             dispatch(fetchChatPreviews({ userId: currentUserId }));
         }
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentUserId]);
 
     useEffect(() => {
         // Animate chat list item entrance
@@ -53,7 +56,7 @@ export default function ChatList() {
                 cancelAnimationFrame(timeoutId);
             }
         };
-    }, [chatPreviews.length]);
+    }, [chats.length]);
 
     return (
         <div
@@ -68,7 +71,7 @@ export default function ChatList() {
                         ))}
                     </>
                 )}
-                {!loading && chatPreviews.length === 0 && (
+                {!loading && chats.length === 0 && (
                     <div className="flex justify-center items-center h-full">
                         <div className="text-3xl font-bold">No chats yet.</div>
                     </div>
@@ -78,8 +81,8 @@ export default function ChatList() {
                         <ChatListItem
                             key={preview.chatId}
                             preview={preview}
-                            selected={selectedChatId === preview.chatId}
-                            onClick={() => dispatch(setSelectedChatId(preview.chatId))}
+                            selected={selectedChat?.id === preview.chatId}
+                            onClick={() => dispatch(setSelectedChat(preview.chatId))}
                         />
                     ))}
             </div>

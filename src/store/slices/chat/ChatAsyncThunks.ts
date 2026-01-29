@@ -17,7 +17,6 @@ import {
 } from "firebase/firestore";
 import { FirebaseError } from "firebase/app";
 
-// Получить список чатов текущего пользователя (превью для списка)
 export const fetchChatPreviews = createAsyncThunk<
     ChatPreview[],
     { userId: string },
@@ -85,7 +84,34 @@ export const fetchChatPreviews = createAsyncThunk<
     }
 );
 
-// Получить все сообщения чата
+export const fetchChats = createAsyncThunk<
+    Chat[],
+    { userId: string },
+    { rejectValue: string }
+>(
+    "chat/fetchChats",
+    async ({ userId }, { rejectWithValue }) => {
+        try {
+            const chatsSnap = await getDocs(
+                query(
+                    collection(db, "chats"),
+                    where("participantIds", "array-contains", userId)
+                )
+            );
+            const chats: Chat[] = chatsSnap.docs.map(chatDoc => ({
+                ...(chatDoc.data() as Chat),
+                id: chatDoc.id
+            }));
+            return chats;
+        } catch (error) {
+            if (error instanceof FirebaseError) {
+                return rejectWithValue(error.message || "Failed to fetch chats");
+            }
+            return rejectWithValue("Failed to fetch chats");
+        }
+    }
+);
+
 export const fetchChatMessages = createAsyncThunk<
     Message[],
     { chatId: string },
@@ -225,7 +251,6 @@ export const sendMessage = createAsyncThunk<
     }
 );
 
-// Пометить все сообщения чата как прочитанные текущим пользователем
 export const markChatAsRead = createAsyncThunk<
     void,
     { chatId: string, userId: string },

@@ -129,10 +129,7 @@ export const findUsersByUsername = createAsyncThunk<
     async (username, { rejectWithValue }) => {
         try {
             const usersRef = collection(db, "users");
-            const searchUsername = username;
-
-            const q = query(usersRef, where("username", "==", searchUsername));
-
+            const q = query(usersRef, where("username", "==", username));
             const querySnapshot = await getDocs(q);
             const results: User[] = [];
             querySnapshot.forEach((docSnap) => {
@@ -147,6 +144,34 @@ export const findUsersByUsername = createAsyncThunk<
                 });
             });
             return results;
+        } catch (error) {
+            return rejectWithValue("Search failed");
+        }
+    }
+);
+
+// Replace: findUsersById thunk with findUserById thunk - finds a single user by ID
+export const findUserById = createAsyncThunk<
+    User | null,
+    string,
+    { rejectValue: string }
+>(
+    "user/findUserById",
+    async (userId, { rejectWithValue }) => {
+        try {
+            const userDoc = await getDoc(doc(db, "users", userId));
+            if (!userDoc.exists()) {
+                return null;
+            }
+            const data = userDoc.data();
+            return {
+                id: userDoc.id,
+                username: data.username || "",
+                avatarUrl: data.avatarUrl,
+                status: data.status || "offline",
+                lastSeenAt: data.lastSeenAt || "",
+                createdAt: data.createdAt || "",
+            };
         } catch (error) {
             return rejectWithValue("Search failed");
         }

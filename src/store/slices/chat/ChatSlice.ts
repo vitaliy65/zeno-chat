@@ -2,24 +2,25 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Chat, ChatPreview } from "@/types/chat";
 import { Message } from "@/types/message";
 import {
-    fetchChatPreviews,
+    fetchChats,
     fetchChatMessages,
     createChat,
-    sendMessage
+    sendMessage,
+    fetchChatPreviews, // ADDED
 } from "./ChatAsyncThunks";
 
 interface ChatState {
-    chats: Chat[];                 // All chat objects, each may contain messages
-    chatPreviews: ChatPreview[];   // For user chats list
-    selectedChatId?: string;       // Currently open chat, if any
-    error?: string;                // To track chat-related errors
+    chats: Chat[];
+    chatPreviews: ChatPreview[]
+    selectedChat?: Chat;
+    error?: string;
     loading: boolean;
 }
 
 const initialState: ChatState = {
     chats: [],
     chatPreviews: [],
-    selectedChatId: undefined,
+    selectedChat: undefined,
     error: undefined,
     loading: false,
 };
@@ -28,8 +29,13 @@ const chatSlice = createSlice({
     name: "chat",
     initialState,
     reducers: {
-        setSelectedChatId(state, action: PayloadAction<string | undefined>) {
-            state.selectedChatId = action.payload;
+        setSelectedChat(state, action: PayloadAction<string | undefined>) {
+            if (action.payload === undefined) {
+                state.selectedChat = undefined;
+            } else {
+                const foundChat = state.chats.find((c) => c.id === action.payload);
+                state.selectedChat = foundChat ? foundChat : undefined;
+            }
         },
         clearChatError(state) {
             state.error = undefined;
@@ -52,13 +58,28 @@ const chatSlice = createSlice({
                 state.error = action.payload as string || "Failed to fetch chat previews";
             })
 
+            // fetchChats
+            .addCase(fetchChats.pending, (state) => {
+                state.loading = true;
+                state.error = undefined;
+            })
+            .addCase(fetchChats.fulfilled, (state, action: PayloadAction<Chat[]>) => {
+                state.chats = action.payload;
+                state.loading = false;
+                state.error = undefined;
+            })
+            .addCase(fetchChats.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string || "Failed to fetch chats";
+            })
+
             // fetchChatMessages
             .addCase(fetchChatMessages.pending, (state) => {
                 state.loading = true;
                 state.error = undefined;
             })
             .addCase(fetchChatMessages.fulfilled, (state, action: PayloadAction<Message[]>) => {
-                const chatId = state.selectedChatId;
+                const chatId = state.selectedChat?.id;
                 if (!chatId) {
                     state.loading = false;
                     return;
@@ -86,7 +107,6 @@ const chatSlice = createSlice({
             })
             .addCase(createChat.fulfilled, (state, action: PayloadAction<Chat>) => {
                 const chat = action.payload;
-                // Only add if not exist
                 if (!state.chats.some((c) => c.id === chat.id)) {
                     state.chats.push(chat);
                 }
@@ -130,5 +150,5 @@ const chatSlice = createSlice({
     }
 });
 
-export const { setSelectedChatId, clearChatError } = chatSlice.actions;
+export const { setSelectedChat, clearChatError } = chatSlice.actions;
 export default chatSlice.reducer;

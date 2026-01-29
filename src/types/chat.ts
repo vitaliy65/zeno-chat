@@ -11,6 +11,6 @@ export interface Chat {
 export interface ChatPreview {
     chatId: string;
     user: User;          // собеседник
-    lastMessage?: Message;
+    lastMessage?: Message | undefined;
     unreadCount: number;
 }
