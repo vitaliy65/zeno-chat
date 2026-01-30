@@ -9,9 +9,9 @@ export default function ChatMessageField() {
                 <Paperclip />
             </button>
             <div className='relative flex bg-background-second/50 w-full p-1 rounded-full shadow-custom-md-inset gap-2'>
-                <span className='bg-accent-bg/50 text-white h-full aspect-square rounded-full flex justify-center items-center shadow-custom-sm button-basic'
+                <button className='bg-accent-bg/50 text-white h-full aspect-square rounded-full flex justify-center items-center shadow-custom-sm button-basic'
                     onClick={() => { }}><SendHorizonal />
-                </span>
+                </button>
                 <input
                     type="text"
                     className="w-full focus:outline-none focus:ring-0"
