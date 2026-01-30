@@ -61,7 +61,7 @@ export default function ChatList() {
     return (
         <div
             ref={containerRef}
-            className='row-span-11 col-span-1 base-container-settings overflow-y-auto overflow-x-hidden thin-scrollbar'
+            className='relative row-span-11 col-span-1 base-container-settings overflow-y-auto overflow-x-hidden thin-scrollbar'
         >
             <div ref={chatListRef} className="flex flex-col gap-3 h-full">
                 {loading && (

@@ -18,7 +18,7 @@ export default function ChatListItemMock() {
     return (
         <Skeleton
             ref={itemRef}
-            className="flex chat-list-item w-full h-14 items-center p-2 gap-2 bg-accent-bg/30 rounded-full shadow-custom-md cursor-pointer select-none"
+            className="flex chat-list-item w-full h-14 items-center p-2 gap-2 rounded-full shadow-custom-md cursor-pointer select-none"
             onMouseEnter={() => animate(1.05, 0.2, "power2.out")}
             onMouseLeave={() => animate(1, 0.2, "power2.inOut")}
             onMouseDown={() => animate(0.98, 0.08, "power1.in")}
