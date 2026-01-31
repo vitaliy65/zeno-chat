@@ -18,7 +18,7 @@ export default function ChatList() {
     const dispatch = useAppDispatch();
 
     const currentUserId = useAppSelector((state) => state.user.user?.id);
-    const loading = useAppSelector((state) => state.chat.loading);
+    const { fetchChats: chatsLoading, fetchChatPreviews: previewsLoading } = useAppSelector((state) => state.chat.loading);
     const chats = useAppSelector((state) => state.chat.chats);
     const chatPreviews = useAppSelector((state) => state.chat.chatPreviews);
     const selectedChat = useAppSelector((state) => state.chat.selectedChat);
@@ -56,7 +56,7 @@ export default function ChatList() {
                 cancelAnimationFrame(timeoutId);
             }
         };
-    }, [chats.length, chatListRef.current?.children.length]);
+    }, [chats.length, chatsLoading, previewsLoading]);
 
     return (
         <div
@@ -64,19 +64,19 @@ export default function ChatList() {
             className='relative row-span-11 col-span-1 base-container-settings overflow-y-auto overflow-x-hidden thin-scrollbar'
         >
             <div ref={chatListRef} className="flex flex-col gap-3 h-full">
-                {loading && (
+                {(chatsLoading || previewsLoading) && (
                     <>
                         {Array.from({ length: 12 }).map((_, index) => (
                             <ChatListItemMock key={index} />
                         ))}
                     </>
                 )}
-                {!loading && chats.length === 0 && (
+                {!chatsLoading && !previewsLoading && chats.length === 0 && (
                     <div className="flex justify-center items-center h-full">
                         <div className="text-3xl font-bold">No chats yet.</div>
                     </div>
                 )}
-                {!loading &&
+                {!chatsLoading && !previewsLoading &&
                     chatPreviews.map((preview) => (
                         <ChatListItem
                             key={preview.chatId}

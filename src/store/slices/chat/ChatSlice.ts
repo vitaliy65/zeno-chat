@@ -6,15 +6,24 @@ import {
     fetchChatMessages,
     createChat,
     sendMessage,
-    fetchChatPreviews, // ADDED
+    fetchChatPreviews,
 } from "./ChatAsyncThunks";
+
+// Индивидуальные флаги загрузки для каждого async thunk
+interface ChatLoadingState {
+    fetchChats: boolean;
+    fetchChatPreviews: boolean;
+    fetchChatMessages: boolean;
+    createChat: boolean;
+    sendMessage: boolean;
+}
 
 interface ChatState {
     chats: Chat[];
-    chatPreviews: ChatPreview[]
+    chatPreviews: ChatPreview[];
     selectedChat?: Chat;
     error?: string;
-    loading: boolean;
+    loading: ChatLoadingState;
 }
 
 const initialState: ChatState = {
@@ -22,7 +31,13 @@ const initialState: ChatState = {
     chatPreviews: [],
     selectedChat: undefined,
     error: undefined,
-    loading: false,
+    loading: {
+        fetchChats: false,
+        fetchChatPreviews: false,
+        fetchChatMessages: false,
+        createChat: false,
+        sendMessage: false,
+    },
 };
 
 const chatSlice = createSlice({
@@ -39,49 +54,59 @@ const chatSlice = createSlice({
         },
         clearChatError(state) {
             state.error = undefined;
-        }
+        },
+        updateChatMessages(state, action: PayloadAction<{ chatId: string; messages: Message[] }>) {
+            const { chatId, messages } = action.payload;
+            const chatIdx = state.chats.findIndex((c) => c.id === chatId);
+            if (chatIdx > -1) {
+                state.chats[chatIdx] = { ...state.chats[chatIdx], messages };
+            }
+            if (state.selectedChat?.id === chatId) {
+                state.selectedChat = { ...state.selectedChat, messages };
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
             // fetchChatPreviews
             .addCase(fetchChatPreviews.pending, (state) => {
-                state.loading = true;
+                state.loading.fetchChatPreviews = true;
                 state.error = undefined;
             })
             .addCase(fetchChatPreviews.fulfilled, (state, action: PayloadAction<ChatPreview[]>) => {
                 state.chatPreviews = action.payload;
-                state.loading = false;
+                state.loading.fetchChatPreviews = false;
                 state.error = undefined;
             })
             .addCase(fetchChatPreviews.rejected, (state, action) => {
-                state.loading = false;
+                state.loading.fetchChatPreviews = false;
                 state.error = action.payload as string || "Failed to fetch chat previews";
             })
 
             // fetchChats
             .addCase(fetchChats.pending, (state) => {
-                state.loading = true;
+                state.loading.fetchChats = true;
                 state.error = undefined;
             })
             .addCase(fetchChats.fulfilled, (state, action: PayloadAction<Chat[]>) => {
                 state.chats = action.payload;
-                state.loading = false;
+                state.loading.fetchChats = false;
                 state.error = undefined;
             })
             .addCase(fetchChats.rejected, (state, action) => {
-                state.loading = false;
+                state.loading.fetchChats = false;
                 state.error = action.payload as string || "Failed to fetch chats";
             })
 
             // fetchChatMessages
             .addCase(fetchChatMessages.pending, (state) => {
-                state.loading = true;
+                state.loading.fetchChatMessages = true;
                 state.error = undefined;
             })
             .addCase(fetchChatMessages.fulfilled, (state, action: PayloadAction<Message[]>) => {
                 const chatId = state.selectedChat?.id;
                 if (!chatId) {
-                    state.loading = false;
+                    state.loading.fetchChatMessages = false;
                     return;
                 }
                 // Place the messages in the corresponding chat in 'chats' array
@@ -93,16 +118,16 @@ const chatSlice = createSlice({
                         messages: action.payload
                     };
                 }
-                state.loading = false;
+                state.loading.fetchChatMessages = false;
             })
             .addCase(fetchChatMessages.rejected, (state, action) => {
-                state.loading = false;
+                state.loading.fetchChatMessages = false;
                 state.error = action.payload as string || "Failed to fetch chat messages";
             })
 
             // createChat
             .addCase(createChat.pending, (state) => {
-                state.loading = true;
+                state.loading.createChat = true;
                 state.error = undefined;
             })
             .addCase(createChat.fulfilled, (state, action: PayloadAction<Chat>) => {
@@ -110,25 +135,23 @@ const chatSlice = createSlice({
                 if (!state.chats.some((c) => c.id === chat.id)) {
                     state.chats.push(chat);
                 }
-                state.loading = false;
+                state.loading.createChat = false;
                 state.error = undefined;
             })
             .addCase(createChat.rejected, (state, action) => {
-                state.loading = false;
+                state.loading.createChat = false;
                 state.error = action.payload as string || "Failed to create chat";
             })
 
             // sendMessage
             .addCase(sendMessage.pending, (state) => {
-                state.loading = true;
+                state.loading.sendMessage = true;
                 state.error = undefined;
             })
             .addCase(sendMessage.fulfilled, (state, action) => {
                 const { chat, message } = action.payload;
-                // Update chat or add if not exist
                 const chatIdx = state.chats.findIndex((c) => c.id === chat.id);
                 if (chatIdx > -1) {
-                    // If 'messages' field exists, append; otherwise set as first message
                     const prevMessages = (state.chats[chatIdx] as Chat).messages ?? [];
                     state.chats[chatIdx] = {
                         ...chat,
@@ -140,15 +163,15 @@ const chatSlice = createSlice({
                         messages: [message]
                     } as Chat);
                 }
-                state.loading = false;
+                state.loading.sendMessage = false;
                 state.error = undefined;
             })
             .addCase(sendMessage.rejected, (state, action) => {
-                state.loading = false;
+                state.loading.sendMessage = false;
                 state.error = action.payload as string || "Failed to send message";
             });
     }
 });
 
-export const { setSelectedChat, clearChatError } = chatSlice.actions;
+export const { setSelectedChat, clearChatError, updateChatMessages } = chatSlice.actions;
 export default chatSlice.reducer;
