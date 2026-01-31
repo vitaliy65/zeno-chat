@@ -11,7 +11,7 @@ export default function UsersSearchList({ users }: { users: User[] }) {
 
     return (
         <div className={`absolute w-full min-h-[56px] z-20 left-1/2 -translate-x-1/2 top-14 bg-background-second 
-                         bg-opacity-95 backdrop-blur-md rounded-xl shadow-custom-lg p-1 py-2 border border-primary/20 flex flex-col gap-1`}>
+                        rounded-xl shadow-custom-lg p-2 border border-primary/20 flex flex-col gap-1`}>
             {users.map((user) => (
                 <div
                     key={user.id}

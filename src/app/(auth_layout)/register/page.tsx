@@ -27,7 +27,7 @@ export default function Register() {
 
     return (
         <div className="absolute inset-0 flex w-full items-center justify-center px-6 py-24">
-            <div className="w-full h-full flex flex-col justify-center items-center max-w-md space-y-8 base-container-settings bg-card! p-6!">
+            <div className="w-full h-full flex flex-col justify-center items-center max-w-md space-y-8 base-container-settings p-6!">
                 <div className="space-y-2 text-center w-full">
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">
                         Create your account

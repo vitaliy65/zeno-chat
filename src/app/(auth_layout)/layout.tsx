@@ -7,7 +7,7 @@ export default function AuthLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <div className="relative flex min-h-screen">
+        <div className="relative flex min-h-screen bg-background-second">
             <FormBackground />
             {children}
         </div>

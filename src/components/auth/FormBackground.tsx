@@ -8,7 +8,7 @@ export default function FormBackground() {
                     src="/hello.png"
                     alt="Register background"
                     fill
-                    className="object-contain"
+                    className="object-contain opacity-50"
                     priority
                 />
             </div>
@@ -17,7 +17,7 @@ export default function FormBackground() {
                     src="/meeting.png"
                     alt="Register background"
                     fill
-                    className="object-contain"
+                    className="object-contain opacity-50"
                     priority
                 />
             </div>

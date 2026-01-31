@@ -40,14 +40,14 @@ export default function ChatList() {
 
             const tl = gsap.timeline();
 
-            gsap.set(items, { xPercent: -100, opacity: 0 });
+            gsap.set(items, { scale: 0, opacity: 0 });
 
             tl.to(items, {
-                xPercent: 0,
+                scale: 1,
                 opacity: 1,
-                stagger: { amount: 1 },
+                stagger: { amount: 0.65 },
                 duration: 0.6,
-                ease: "power2.out"
+                ease: "back.out"
             });
         });
 
@@ -56,7 +56,7 @@ export default function ChatList() {
                 cancelAnimationFrame(timeoutId);
             }
         };
-    }, [chats.length]);
+    }, [chats.length, chatListRef.current?.children.length]);
 
     return (
         <div
