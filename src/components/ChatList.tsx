@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { ChatListItem } from "./chatList/ChatListItem";
 import ChatListItemMock from "./mock/ChatListItemMock";
 import { setSelectedChat } from "@/store/slices/chat/ChatSlice";
+import { useMessagesListener } from "@/hooks/useMessagesListener";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -22,6 +23,8 @@ export default function ChatList() {
     const chats = useAppSelector((state) => state.chat.chats);
     const chatPreviews = useAppSelector((state) => state.chat.chatPreviews);
     const selectedChat = useAppSelector((state) => state.chat.selectedChat);
+
+    useMessagesListener(chats);
 
     useEffect(() => {
         if (currentUserId) {

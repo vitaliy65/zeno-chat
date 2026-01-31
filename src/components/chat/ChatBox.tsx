@@ -1,18 +1,24 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import ChatBoxMsgGetter from "./ChatBoxMsgGetter";
 import ChatBoxMsgSender from "./ChatBoxMsgSender";
+import { markChatAsRead } from "@/store/slices/chat/ChatAsyncThunks";
 
 export default function ChatBox() {
     const currentUserId = useAppSelector((state) => state.user.user?.id);
-    const messages = useAppSelector((state) => state.chat.selectedChat?.messages ?? []);
+    const selectedChat = useAppSelector((state) => state.chat.selectedChat);
+    const id = selectedChat?.id;
+    const messages = selectedChat?.messages ?? [];
+    const dispatch = useAppDispatch();
     const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages.length]);
+        dispatch(markChatAsRead({ userId: currentUserId || "", chatId: id || '' }))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dispatch, id, messages.length]);
 
     return (
         <div className="flex flex-col w-full h-full rounded-md shadow-custom-lg-inset px-4 py-2 overflow-x-hidden overflow-y-auto space-y-1">

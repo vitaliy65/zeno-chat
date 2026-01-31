@@ -7,6 +7,7 @@ import {
     createChat,
     sendMessage,
     fetchChatPreviews,
+    markChatAsRead
 } from "./ChatAsyncThunks";
 
 // Индивидуальные флаги загрузки для каждого async thunk
@@ -63,6 +64,39 @@ const chatSlice = createSlice({
             }
             if (state.selectedChat?.id === chatId) {
                 state.selectedChat = { ...state.selectedChat, messages };
+            }
+
+            // Update chatPreviews (lastMessage & unreadCount)
+            const previewIdx = state.chatPreviews.findIndex(
+                (preview) => preview.chatId === chatId
+            );
+
+            if (previewIdx > -1) {
+                const lastMessage = messages.length > 0 ? messages[messages.length - 1] : undefined;
+
+                const prevPreview = state.chatPreviews[previewIdx];
+                let unreadCount = prevPreview.unreadCount;
+
+                if (state.selectedChat?.id === chatId) {
+                    unreadCount = 0;
+                } else {
+                    unreadCount = messages.filter((m: Message) => m && m.isRead === false).length;
+                }
+
+                state.chatPreviews[previewIdx] = {
+                    ...prevPreview,
+                    lastMessage: lastMessage
+                        ? {
+                            id: lastMessage.id,
+                            text: lastMessage.text,
+                            createdAt: lastMessage.createdAt,
+                            senderId: lastMessage.senderId,
+                            chatId: chatId,
+                            isRead: true,
+                        }
+                        : prevPreview.lastMessage,
+                    unreadCount,
+                };
             }
         },
     },
@@ -169,6 +203,39 @@ const chatSlice = createSlice({
             .addCase(sendMessage.rejected, (state, action) => {
                 state.loading.sendMessage = false;
                 state.error = action.payload as string || "Failed to send message";
+            })
+
+            // markChatAsRead
+            .addCase(markChatAsRead.pending, (state) => {
+                state.error = undefined;
+            })
+            .addCase(markChatAsRead.fulfilled, (state, action) => {
+                const { chatId, userId } = (action.meta.arg as { chatId: string, userId: string });
+
+                // Update in chats array
+                const chatIdx = state.chats.findIndex((c) => c.id === chatId);
+                if (chatIdx > -1 && state.chats[chatIdx].messages) {
+                    state.chats[chatIdx] = {
+                        ...state.chats[chatIdx],
+                        messages: state.chats[chatIdx].messages?.map(msg =>
+                            msg.senderId !== userId ? { ...msg, isRead: true } : msg
+                        )
+                    };
+                }
+
+                // Update in selectedChat if currently selected
+                if (state.selectedChat?.id === chatId && state.selectedChat.messages) {
+                    state.selectedChat = {
+                        ...state.selectedChat,
+                        messages: state.selectedChat.messages.map(msg =>
+                            msg.senderId !== userId ? { ...msg, isRead: true } : msg
+                        )
+                    };
+                }
+                state.error = undefined;
+            })
+            .addCase(markChatAsRead.rejected, (state, action) => {
+                state.error = action.payload as string || "Failed to mark messages as read";
             });
     }
 });

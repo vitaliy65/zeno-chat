@@ -1,15 +1,12 @@
 "use client"
 
 import { useAppSelector } from "@/store/hooks";
-import { useMessagesListener } from "@/hooks/useMessagesListener";
 import ChatNotSelected from "./chat/ChatNotSelected";
 import ChatBox from "./chat/ChatBox";
 import ChatMessageField from "./chat/ChatMessageField";
 
 export default function ChatContainer() {
     const chat = useAppSelector((s) => s.chat.selectedChat);
-
-    useMessagesListener(chat?.id);
 
     return (
         <div className='relative flex flex-col justify-center items-center row-span-11 col-span-3 base-container-settings overflow-y-auto p-4 space-y-4'>

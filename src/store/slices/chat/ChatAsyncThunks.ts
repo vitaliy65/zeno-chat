@@ -262,14 +262,19 @@ export const markChatAsRead = createAsyncThunk<
             const messagesSnap = await getDocs(
                 query(
                     collection(db, "chats", chatId, "messages"),
-                    where("isRead", "==", false),
-                    where("senderId", "!=", userId)
+                    where("isRead", "==", false)
                 )
             );
+
             const batch = writeBatch(db);
             messagesSnap.forEach(msgDoc => {
-                batch.update(msgDoc.ref, { isRead: true });
+                const data = msgDoc.data();
+                // Only mark as read if the message sender is NOT the user themselves
+                if (data.senderId !== userId) {
+                    batch.update(msgDoc.ref, { isRead: true });
+                }
             });
+
             await batch.commit();
         } catch (error) {
             if (error instanceof FirebaseError) {
