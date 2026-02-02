@@ -24,7 +24,7 @@ export default function SearchBlock() {
     }
 
     return (
-        <div className='relative flex bg-background-second/50 min-w-2xs p-1 rounded-full shadow-custom-md-inset gap-2'>
+        <div className='relative flex bg-background-second/50 lg:min-w-2xs p-1 rounded-full shadow-custom-md-inset gap-2'>
             <span className='bg-accent-bg/50 text-white h-full aspect-square rounded-full flex justify-center items-center shadow-custom-sm button-basic'
                 onClick={handleChatSearchClick}><Search size={20} /></span>
             <input
