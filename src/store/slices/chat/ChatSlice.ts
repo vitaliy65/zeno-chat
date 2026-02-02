@@ -1,19 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Chat, ChatPreview } from "@/types/chat";
-import { Message } from "@/types/message";
+import type { Chat } from "@/types/chat";
+import type { Message } from "@/types/message";
 import {
     fetchChats,
     fetchChatMessages,
     createChat,
     sendMessage,
-    fetchChatPreviews,
     markChatAsRead
 } from "./ChatAsyncThunks";
 
 // Индивидуальные флаги загрузки для каждого async thunk
 interface ChatLoadingState {
     fetchChats: boolean;
-    fetchChatPreviews: boolean;
     fetchChatMessages: boolean;
     createChat: boolean;
     sendMessage: boolean;
@@ -21,7 +19,6 @@ interface ChatLoadingState {
 
 interface ChatState {
     chats: Chat[];
-    chatPreviews: ChatPreview[];
     selectedChat?: Chat;
     error?: string;
     loading: ChatLoadingState;
@@ -29,12 +26,10 @@ interface ChatState {
 
 const initialState: ChatState = {
     chats: [],
-    chatPreviews: [],
     selectedChat: undefined,
     error: undefined,
     loading: {
         fetchChats: false,
-        fetchChatPreviews: false,
         fetchChatMessages: false,
         createChat: false,
         sendMessage: false,
@@ -65,57 +60,10 @@ const chatSlice = createSlice({
             if (state.selectedChat?.id === chatId) {
                 state.selectedChat = { ...state.selectedChat, messages };
             }
-
-            // Update chatPreviews (lastMessage & unreadCount)
-            const previewIdx = state.chatPreviews.findIndex(
-                (preview) => preview.chatId === chatId
-            );
-
-            if (previewIdx > -1) {
-                const lastMessage = messages.length > 0 ? messages[messages.length - 1] : undefined;
-
-                const prevPreview = state.chatPreviews[previewIdx];
-                let unreadCount = prevPreview.unreadCount;
-
-                if (state.selectedChat?.id === chatId) {
-                    unreadCount = 0;
-                } else {
-                    unreadCount = messages.filter((m: Message) => m && m.isRead === false).length;
-                }
-
-                state.chatPreviews[previewIdx] = {
-                    ...prevPreview,
-                    lastMessage: lastMessage
-                        ? {
-                            id: lastMessage.id,
-                            text: lastMessage.text,
-                            createdAt: lastMessage.createdAt,
-                            senderId: lastMessage.senderId,
-                            chatId: chatId,
-                            isRead: true,
-                        }
-                        : prevPreview.lastMessage,
-                    unreadCount,
-                };
-            }
         },
     },
     extraReducers: (builder) => {
         builder
-            // fetchChatPreviews
-            .addCase(fetchChatPreviews.pending, (state) => {
-                state.loading.fetchChatPreviews = true;
-                state.error = undefined;
-            })
-            .addCase(fetchChatPreviews.fulfilled, (state, action: PayloadAction<ChatPreview[]>) => {
-                state.chatPreviews = action.payload;
-                state.loading.fetchChatPreviews = false;
-                state.error = undefined;
-            })
-            .addCase(fetchChatPreviews.rejected, (state, action) => {
-                state.loading.fetchChatPreviews = false;
-                state.error = action.payload as string || "Failed to fetch chat previews";
-            })
 
             // fetchChats
             .addCase(fetchChats.pending, (state) => {

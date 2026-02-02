@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { AuthUser, UserStatus } from "../../../types/user";
-import { loginUser, logout, registerUser, tryAutoLogin } from "./UserAsyncThunks";
+import type { AuthUser, User, UserStatus } from "../../../types/user";
+import { loginUser, logout, registerUser, tryAutoLogin, updateCurrentUser } from "./UserAsyncThunks";
 
 interface UserState {
     user: AuthUser | null;
@@ -88,7 +88,31 @@ const userSlice = createSlice({
                 state.user = null;
                 state.loading = false;
                 state.error = action.payload ?? "Auto login failed";
-            });
+            })
+
+            // --------------- updateCurrentUser ---------------
+            .addCase(
+                updateCurrentUser.pending,
+                (state) => {
+                    state.loading = true;
+                    state.error = null;
+                }
+            )
+            .addCase(
+                updateCurrentUser.fulfilled,
+                (state, action: PayloadAction<AuthUser>) => {
+                    state.user = action.payload;
+                    state.loading = false;
+                    state.error = null;
+                }
+            )
+            .addCase(
+                updateCurrentUser.rejected,
+                (state, action) => {
+                    state.loading = false;
+                    state.error = action.payload ?? "User update failed";
+                }
+            );
     }
 });
 

@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { User } from "@/types/user";
 import AvatarBlock from "./AvatarBlock";
-import { createChat, fetchChatPreviews } from "@/store/slices/chat/ChatAsyncThunks";
+import { createChat } from "@/store/slices/chat/ChatAsyncThunks";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import Spinner from "@/components/Spinner";
 import { cn } from "@/lib/utils";
+import { fetchFriends } from "@/store/slices/friends/FriendsAsyncThunks";
 
 export default function UsersSearchList({ users }: { users: User[] }) {
     const dispatch = useAppDispatch();
@@ -20,8 +21,8 @@ export default function UsersSearchList({ users }: { users: User[] }) {
         if (!currentUserId) return;
         setCreatingForUserId(otherUserId);
         try {
-            await dispatch(createChat({ userId: currentUserId, otherUserId })).unwrap();
-            await dispatch(fetchChatPreviews({ userId: currentUserId })).unwrap();
+            await dispatch(createChat({ userId: currentUserId, otherUserId }));
+            await dispatch(fetchFriends({ currentUserId }));
         } finally {
             setCreatingForUserId(null);
         }

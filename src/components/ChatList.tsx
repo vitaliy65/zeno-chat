@@ -3,12 +3,15 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { fetchChatPreviews, fetchChats } from "@/store/slices/chat/ChatAsyncThunks";
+import { fetchChats } from "@/store/slices/chat/ChatAsyncThunks";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { ChatListItem } from "./chatList/ChatListItem";
 import ChatListItemMock from "./mock/ChatListItemMock";
 import { setSelectedChat } from "@/store/slices/chat/ChatSlice";
-import { useMessagesListener } from "@/hooks/useMessagesListener";
+import { fetchFriends } from "@/store/slices/friends/FriendsAsyncThunks";
+import { User } from "@/types/user";
+import { openMobileChatModal } from "@/store/slices/MobileChat/MobileChatModalSlice";
+import useMediaQuery from "@/hooks/useMediaQuery";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,17 +22,18 @@ export default function ChatList() {
     const dispatch = useAppDispatch();
 
     const currentUserId = useAppSelector((state) => state.user.user?.id);
-    const { fetchChats: chatsLoading, fetchChatPreviews: previewsLoading } = useAppSelector((state) => state.chat.loading);
+    const { fetchChats: chatsLoading } = useAppSelector((state) => state.chat.loading);
     const chats = useAppSelector((state) => state.chat.chats);
-    const chatPreviews = useAppSelector((state) => state.chat.chatPreviews);
     const selectedChat = useAppSelector((state) => state.chat.selectedChat);
+    const friends = useAppSelector((state) => state.friends.friends);
 
-    useMessagesListener(chats);
+    const { isDesktop } = useMediaQuery();
+    const { isOpen } = useAppSelector(s => s.MobileChatNodal)
 
     useEffect(() => {
         if (currentUserId) {
+            dispatch(fetchFriends({ currentUserId }));
             dispatch(fetchChats({ userId: currentUserId }));
-            dispatch(fetchChatPreviews({ userId: currentUserId }));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUserId]);
@@ -59,35 +63,47 @@ export default function ChatList() {
                 cancelAnimationFrame(timeoutId);
             }
         };
-    }, [chats.length, chatsLoading, previewsLoading]);
+    }, [chats.length, chatsLoading]);
+
+    if (!isDesktop && isOpen) return null;
 
     return (
         <div
             ref={containerRef}
-            className='relative row-span-11 col-span-1 base-container-settings overflow-y-auto overflow-x-hidden thin-scrollbar'
+            className='relative row-span-11 col-span-3 lg:col-span-1 base-container-settings overflow-y-auto overflow-x-hidden thin-scrollbar'
         >
             <div ref={chatListRef} className="flex flex-col gap-3 h-full">
-                {(chatsLoading || previewsLoading) && (
+                {(chatsLoading) && (
                     <>
                         {Array.from({ length: 12 }).map((_, index) => (
                             <ChatListItemMock key={index} />
                         ))}
                     </>
                 )}
-                {!chatsLoading && !previewsLoading && chats.length === 0 && (
+                {!chatsLoading && chats.length === 0 && (
                     <div className="flex justify-center items-center h-full">
                         <div className="text-3xl font-bold">No chats yet.</div>
                     </div>
                 )}
-                {!chatsLoading && !previewsLoading &&
-                    chatPreviews.map((preview) => (
-                        <ChatListItem
-                            key={preview.chatId}
+                {!chatsLoading &&
+                    chats.map((chat) => {
+                        const user = friends.find(friend => friend.chatId === chat.id) as User;
+                        const preview = {
+                            chatId: chat.id,
+                            user: user,
+                            lastMessage: chat.messages?.[chat.messages.length - 1],
+                            unreadCount: chat.messages?.filter(message => !message.isRead && message.senderId !== currentUserId).length || 0,
+                        }
+                        return <ChatListItem
+                            key={chat.id}
                             preview={preview}
-                            selected={selectedChat?.id === preview.chatId}
-                            onClick={() => dispatch(setSelectedChat(preview.chatId))}
+                            selected={selectedChat?.id === chat.id}
+                            onClick={() => {
+                                dispatch(setSelectedChat(chat.id));
+                                if (!isDesktop) dispatch(openMobileChatModal())
+                            }}
                         />
-                    ))}
+                    })}
             </div>
         </div>
     )

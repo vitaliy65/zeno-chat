@@ -14,7 +14,7 @@ export default function Header() {
     return (
         <div className='relative flex row-span-1 col-span-4 base-container-settings justify-between'>
             <HeaderLogo />
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-row gap-2 justify-end">
                 <SearchBlock />
                 <NotificationBlock />
                 {user ? <AvatarBlock user={user} /> : <AvatarMock />}

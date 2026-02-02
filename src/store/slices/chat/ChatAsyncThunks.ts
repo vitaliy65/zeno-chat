@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { Chat, ChatPreview } from "@/types/chat";
+import type { Chat } from "@/types/chat";
 import type { Message } from "@/types/message";
 import type { User } from "@/types/user";
 import { db } from "@/lib/firebase";
@@ -16,73 +16,6 @@ import {
     writeBatch,
 } from "firebase/firestore";
 import { FirebaseError } from "firebase/app";
-
-export const fetchChatPreviews = createAsyncThunk<
-    ChatPreview[],
-    { userId: string },
-    { rejectValue: string }
->(
-    "chat/fetchChatPreviews",
-    async ({ userId }, { rejectWithValue }) => {
-        try {
-            // Находим все личные чаты, где участвует пользователь
-            const chatsSnap = await getDocs(
-                query(
-                    collection(db, "chats"),
-                    where("participantIds", "array-contains", userId)
-                )
-            );
-
-            const chats: Chat[] = [];
-            for (const chatDoc of chatsSnap.docs) {
-                const chat = chatDoc.data() as Chat;
-                chat.id = chatDoc.id;
-                chats.push(chat);
-            }
-
-            // Получить превью для каждого чата
-            const chatPreviews: ChatPreview[] = [];
-            for (const chat of chats) {
-                // найди id собеседника
-                const anotherId = chat.participantIds.find(id => id !== userId)!;
-                const userSnap = await getDoc(doc(db, "users", anotherId));
-                const user = { ...(userSnap.data() || {}), id: anotherId } as User;
-
-                // найти последнее сообщение
-                let lastMsg: Message | undefined;
-                let unreadCount = 0;
-                const messagesSnap = await getDocs(
-                    query(
-                        collection(db, "chats", chat.id, "messages"),
-                        orderBy("createdAt", "desc"),
-                    )
-                );
-                if (!messagesSnap.empty) {
-                    lastMsg = messagesSnap.docs[0].data() as Message;
-                    // все непрочитанные сообщения, где sender не ты
-                    unreadCount = messagesSnap.docs.filter(m => {
-                        const mData = m.data() as Message;
-                        return mData.senderId !== userId && !mData.isRead;
-                    }).length;
-                }
-
-                chatPreviews.push({
-                    chatId: chat.id,
-                    user,
-                    lastMessage: lastMsg,
-                    unreadCount,
-                });
-            }
-
-            return chatPreviews;
-        } catch (error) {
-            if (error instanceof FirebaseError) {
-                return rejectWithValue(error.message || "Failed to fetch chat previews");
-            }
-            return rejectWithValue("Failed to fetch chat previews");
-        }
-    }
-);
 
 export const fetchChats = createAsyncThunk<
     Chat[],

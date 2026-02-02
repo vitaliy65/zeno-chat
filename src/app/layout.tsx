@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import ModalsProvider from "@/components/modals/ModalsProvider";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -31,8 +32,11 @@ export default function RootLayout({
         className={`${roboto.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          {children}
+          <ModalsProvider>
+            {children}
+          </ModalsProvider>
         </Providers>
+
       </body>
     </html>
   );

@@ -3,8 +3,45 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { AuthUser, LoginPayload, RegisterPayload, User } from "../../../types/user";
 import { auth, db } from "../../../lib/firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { FirebaseError } from "firebase/app";
+
+export const updateCurrentUser = createAsyncThunk<
+    AuthUser,
+    Partial<AuthUser> & { id: string },
+    { rejectValue: string }
+>(
+    "user/updateCurrentUser",
+    async (payload, { rejectWithValue }) => {
+        try {
+            const { id, ...updates } = payload;
+            const userRef = doc(db, "users", id);
+            await updateDoc(userRef, updates);
+
+            const updatedDoc = await getDoc(userRef);
+            if (!updatedDoc.exists()) {
+                throw new Error("User not found");
+            }
+            const userData = updatedDoc.data();
+
+            return {
+                id,
+                username: userData?.username || "",
+                email: userData?.email || "",
+                avatarUrl: userData?.avatarUrl,
+                status: userData?.status ?? "offline",
+                lastSeenAt: userData?.lastSeenAt ?? "",
+                createdAt: userData?.createdAt ?? "",
+            } as AuthUser;
+        } catch (error) {
+            if (error instanceof FirebaseError) {
+                return rejectWithValue(error.code || "User update failed");
+            }
+            return rejectWithValue("User update failed");
+        }
+    }
+);
+
 
 export const loginUser = createAsyncThunk<
     AuthUser, // return type on fulfilled

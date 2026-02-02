@@ -2,9 +2,9 @@
 
 import { useRef } from "react";
 import { gsap } from "gsap"
-import AvatarBlock from "../header/AvatarBlock";
 import { ChatPreview } from "@/types/chat";
 import { cn } from "@/lib/utils";
+import ChatListAvatar from "./ChatListAvatar";
 
 interface ChatListItemProps {
     preview: ChatPreview;
@@ -22,7 +22,7 @@ export function ChatListItem({ preview, selected = false, onClick }: ChatListIte
         }
     };
 
-    const username = preview.user.username || "Username";
+    const username = preview.user?.username || "Username";
     const lastMessageText = preview.lastMessage ? preview.lastMessage.text : "No messages yet";
     let timeStr = "";
     if (preview.lastMessage?.createdAt) {
@@ -54,7 +54,7 @@ export function ChatListItem({ preview, selected = false, onClick }: ChatListIte
             tabIndex={0}
             onClick={onClick}
         >
-            <AvatarBlock user={preview.user} />
+            <ChatListAvatar user={preview.user} />
             <div className="flex flex-col w-full mr-3 overflow-hidden">
                 <div className="flex flex-row items-center justify-between">
                     <span className="font-semibold truncate">{username}</span>
