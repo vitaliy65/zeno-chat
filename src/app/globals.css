@@ -63,9 +63,9 @@
   --radius: 0.625rem;
 
   /* Backgrounds */
-  --background: #212427;
-  --background-light: #2c3033;
-  --background-second: #141618;
+  --background: #2a2c35;
+  --background-light: rgb(59, 63, 73);
+  --background-second: #212329;
 
   /* Text */
   --foreground: #e7ebec;
@@ -110,18 +110,21 @@
   --sidebar-ring: #6366f1;
 
   /* Shadows (мягкие, «воздушные») */
-  --shadow-sm: 0 0px 2px rgba(0, 0, 0, 0.08),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
-  --shadow-md: 0 0px 4px rgba(0, 0, 0, 0.12),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
-  --shadow-lg: 0 0px 8px rgba(0, 0, 0, 0.14),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  --shadow-sm:
+    0 0px 2px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  --shadow-md:
+    0 0px 4px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  --shadow-lg:
+    0 0px 8px rgba(0, 0, 0, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.1);
 
-  --shadow-sm-inset: inset 0 2px 2px rgba(0, 0, 0, 0.1),
+  --shadow-sm-inset:
+    inset 0 2px 2px rgba(0, 0, 0, 0.1),
     inset 0 -1px 1px rgba(255, 255, 255, 0.1);
-  --shadow-md-inset: inset 0 4px 4px rgba(0, 0, 0, 0.15),
+  --shadow-md-inset:
+    inset 0 4px 4px rgba(0, 0, 0, 0.15),
     inset 0 -1px 1px rgba(255, 255, 255, 0.1);
-  --shadow-lg-inset: inset 0 8px 8px rgba(0, 0, 0, 0.2),
+  --shadow-lg-inset:
+    inset 0 8px 8px rgba(0, 0, 0, 0.2),
     inset 0 -1px 1px rgba(255, 255, 255, 0.1);
 }
 
@@ -158,18 +161,21 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 
-  --shadow-sm: inset 0 1px 2px #ffffff30, 0 1px 2px #00000030,
-    0 2px 4px #00000015;
-  --shadow-md: inset 0 1px 2px #ffffff60, 0 2px 4px #00000030,
-    0 4px 8px #00000015;
-  --shadow-lg: inset 0 1px 2px #ffffff60, 0 4px 6px #00000030,
-    0 6px 10px #00000015;
+  --shadow-sm:
+    inset 0 1px 2px #ffffff30, 0 1px 2px #00000030, 0 2px 4px #00000015;
+  --shadow-md:
+    inset 0 1px 2px #ffffff60, 0 2px 4px #00000030, 0 4px 8px #00000015;
+  --shadow-lg:
+    inset 0 1px 2px #ffffff60, 0 4px 6px #00000030, 0 6px 10px #00000015;
 
-  --shadow-sm-inset: inset 0 1px 2px #00000030, inset 0 2px 4px #00000030,
+  --shadow-sm-inset:
+    inset 0 1px 2px #00000030, inset 0 2px 4px #00000030,
     inset 0 -1px 2px #ffffff50;
-  --shadow-md-inset: inset 0 1px 2px #00000060, inset 0 4px 6px #00000030,
+  --shadow-md-inset:
+    inset 0 1px 2px #00000060, inset 0 4px 6px #00000030,
     inset 0 -1px 2px #ffffff50;
-  --shadow-lg-inset: inset 0 1px 2px #00000060, inset 0 6px 8px #00000030,
+  --shadow-lg-inset:
+    inset 0 1px 2px #00000060, inset 0 6px 8px #00000030,
     inset 0 -1px 2px #ffffff50;
 }
 
