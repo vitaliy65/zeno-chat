@@ -38,5 +38,5 @@ export function useMessagesListener(chats: Chat[] | undefined) {
     return () => {
       unsubscribes.forEach(unsub => unsub());
     };
-  }, [JSON.stringify(chats?.map(c => c.id)), dispatch]); // use JSON.stringify to re-run effect if chatIds changed
+  }, [chats?.length, dispatch]);
 }

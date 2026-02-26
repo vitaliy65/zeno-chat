@@ -15,7 +15,7 @@ export default function ChatBox() {
     const bottomRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        bottomRef.current?.scrollIntoView();
         dispatch(markChatAsRead({ userId: currentUserId || "", chatId: id || '' }))
     }, [currentUserId, dispatch, id, messages.length]);
 

@@ -7,7 +7,11 @@ export interface User {
     createdAt: string;   // ISO
 }
 
-export type UserStatus = "online" | "offline" | "away";
+export enum UserStatus {
+    "online" = "online",
+    "offline" = "offline",
+    "away" = "away"
+};
 
 export interface AuthUser extends User {
     email: string;

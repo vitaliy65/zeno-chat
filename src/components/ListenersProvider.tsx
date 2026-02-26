@@ -2,6 +2,7 @@
 
 import { useMessagesListener } from '@/hooks/useMessagesListener';
 import { useProfileChangeListener } from '@/hooks/useProfileChangeListener';
+import useUserStatusListener from '@/hooks/useUserStatusListener';
 import { useAppSelector } from '@/store/hooks';
 
 export default function ListenersProvider() {
@@ -9,6 +10,7 @@ export default function ListenersProvider() {
 
     useMessagesListener(chats);
     useProfileChangeListener();
+    useUserStatusListener();
 
     return null;
 }
