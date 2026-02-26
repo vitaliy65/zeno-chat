@@ -13,13 +13,13 @@ export default function SearchBlock() {
 
     const handleChatSearch = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.code === "Enter" && searchUser.length != 0) {
-            dispatch(findUsersByUsername(searchUser)).then(res => { setFindedUsers(res.payload as User[]); console.log(res.payload) });
+            dispatch(findUsersByUsername(searchUser)).then(res => { setFindedUsers(res.payload as User[]); });
         }
     }
 
     const handleChatSearchClick = (e: React.MouseEvent<HTMLInputElement>) => {
         if (searchUser.length != 0) {
-            dispatch(findUsersByUsername(searchUser)).then(res => { setFindedUsers(res.payload as User[]); console.log(res.payload) });
+            dispatch(findUsersByUsername(searchUser)).then(res => { setFindedUsers(res.payload as User[]); });
         }
     }
 
@@ -36,6 +36,12 @@ export default function SearchBlock() {
                 placeholder="Search..."
             />
             <UsersSearchList users={findedUsers} />
+            {findedUsers.length > 0 && (
+                <div
+                    className="fixed inset-0 w-screen h-screen z-10"
+                    onClick={() => setFindedUsers([])}
+                />
+            )}
         </div>
     )
 }

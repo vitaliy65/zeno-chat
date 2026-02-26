@@ -166,19 +166,22 @@ export const findUsersByUsername = createAsyncThunk<
     async (username, { rejectWithValue }) => {
         try {
             const usersRef = collection(db, "users");
-            const q = query(usersRef, where("username", "==", username));
-            const querySnapshot = await getDocs(q);
+            const querySnapshot = await getDocs(usersRef);
+            const lowerUsername = username.toLowerCase();
             const results: User[] = [];
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
-                results.push({
-                    id: docSnap.id,
-                    username: data.username || "",
-                    avatarUrl: data.avatarUrl,
-                    status: data.status || "offline",
-                    lastSeenAt: data.lastSeenAt || "",
-                    createdAt: data.createdAt || "",
-                });
+                const docUsername = (data.username || "").toLowerCase();
+                if (docUsername.includes(lowerUsername) && lowerUsername.length > 0) {
+                    results.push({
+                        id: docSnap.id,
+                        username: data.username || "",
+                        avatarUrl: data.avatarUrl,
+                        status: data.status || "offline",
+                        lastSeenAt: data.lastSeenAt || "",
+                        createdAt: data.createdAt || "",
+                    });
+                }
             });
             return results;
         } catch (error) {
