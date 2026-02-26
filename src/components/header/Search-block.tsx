@@ -17,7 +17,7 @@ export default function SearchBlock() {
         }
     }
 
-    const handleChatSearchClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    const handleChatSearchClick = () => {
         if (searchUser.length != 0) {
             dispatch(findUsersByUsername(searchUser)).then(res => { setFindedUsers(res.payload as User[]); });
         }

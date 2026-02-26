@@ -31,6 +31,16 @@ const friendsSlice = createSlice({
         clearFriendsError(state) {
             state.error = undefined;
         },
+        updateFriend(state, action: PayloadAction<Friend>) {
+            const updated = action.payload;
+            const index = state.friends.findIndex(f => f.id === updated.id);
+            if (index !== -1) {
+                state.friends[index] = {
+                    ...state.friends[index],
+                    ...updated,
+                };
+            }
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -51,6 +61,7 @@ const friendsSlice = createSlice({
 
 
 export const {
+    updateFriend,
 } = friendsSlice.actions;
 
 export default friendsSlice.reducer;

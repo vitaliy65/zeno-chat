@@ -25,13 +25,12 @@ export default function ChatBox() {
             top: container.scrollHeight,
             behavior: "smooth",
         });
-    }, [id]);
+    }, [id, messages.length]);
 
-    // Отмечаем чат прочитанным при изменении количества сообщений
     useEffect(() => {
         if (!currentUserId || !id) return;
         dispatch(markChatAsRead({ userId: currentUserId, chatId: id }));
-    }, [currentUserId, dispatch, id, messages.length]);
+    }, [currentUserId, dispatch, id]);
 
     const handleScroll = async () => {
         const container = containerRef.current;
