@@ -3,10 +3,10 @@ import type { Chat } from "@/types/chat";
 import type { Message } from "@/types/message";
 import {
     fetchChats,
-    fetchChatMessages,
     createChat,
     sendMessage,
-    markChatAsRead
+    markChatAsRead,
+    fetchMoreMessages
 } from "./ChatAsyncThunks";
 
 // Индивидуальные флаги загрузки для каждого async thunk
@@ -51,14 +51,27 @@ const chatSlice = createSlice({
         clearChatError(state) {
             state.error = undefined;
         },
-        updateChatMessages(state, action: PayloadAction<{ chatId: string; messages: Message[] }>) {
-            const { chatId, messages } = action.payload;
+        updateChatMessages(state, action: PayloadAction<{ chatId: string; newMessage: Message }>) {
+            const { chatId, newMessage } = action.payload;
             const chatIdx = state.chats.findIndex((c) => c.id === chatId);
             if (chatIdx > -1) {
-                state.chats[chatIdx] = { ...state.chats[chatIdx], messages };
+                const prevMessages = state.chats[chatIdx].messages ?? [];
+                // Avoid duplicate messages by id
+                if (!prevMessages.some((m) => m.id === newMessage.id)) {
+                    state.chats[chatIdx] = {
+                        ...state.chats[chatIdx],
+                        messages: [...prevMessages, newMessage]
+                    };
+                }
             }
             if (state.selectedChat?.id === chatId) {
-                state.selectedChat = { ...state.selectedChat, messages };
+                const prevMessages = state.selectedChat.messages ?? [];
+                if (!prevMessages.some((m) => m.id === newMessage.id)) {
+                    state.selectedChat = {
+                        ...state.selectedChat,
+                        messages: [...prevMessages, newMessage]
+                    };
+                }
             }
         },
     },
@@ -78,33 +91,6 @@ const chatSlice = createSlice({
             .addCase(fetchChats.rejected, (state, action) => {
                 state.loading.fetchChats = false;
                 state.error = action.payload as string || "Failed to fetch chats";
-            })
-
-            // fetchChatMessages
-            .addCase(fetchChatMessages.pending, (state) => {
-                state.loading.fetchChatMessages = true;
-                state.error = undefined;
-            })
-            .addCase(fetchChatMessages.fulfilled, (state, action: PayloadAction<Message[]>) => {
-                const chatId = state.selectedChat?.id;
-                if (!chatId) {
-                    state.loading.fetchChatMessages = false;
-                    return;
-                }
-                // Place the messages in the corresponding chat in 'chats' array
-                const chatIdx = state.chats.findIndex((c) => c.id === chatId);
-                if (chatIdx > -1) {
-                    // Updating existing chat's messages
-                    state.chats[chatIdx] = {
-                        ...state.chats[chatIdx],
-                        messages: action.payload
-                    };
-                }
-                state.loading.fetchChatMessages = false;
-            })
-            .addCase(fetchChatMessages.rejected, (state, action) => {
-                state.loading.fetchChatMessages = false;
-                state.error = action.payload as string || "Failed to fetch chat messages";
             })
 
             // createChat
@@ -184,6 +170,47 @@ const chatSlice = createSlice({
             })
             .addCase(markChatAsRead.rejected, (state, action) => {
                 state.error = action.payload as string || "Failed to mark messages as read";
+            })
+
+            // fetchMoreMessages
+            .addCase(fetchMoreMessages.pending, (state) => {
+                state.loading.fetchChatMessages = true;
+                state.error = undefined;
+            })
+            .addCase(fetchMoreMessages.fulfilled, (state, action) => {
+                const { chatId, messages } = action.payload;
+
+                // Update chat in chats array
+                const chatIdx = state.chats.findIndex((c) => c.id === chatId);
+                if (chatIdx > -1) {
+                    // Prepend the older messages to the current messages
+                    const prevMessages = state.chats[chatIdx].messages ?? [];
+                    // Only add unique messages (avoid duplicates)
+                    const existingIds = new Set(prevMessages.map(m => m.id));
+                    const newMessages = messages.filter(m => !existingIds.has(m.id));
+                    state.chats[chatIdx] = {
+                        ...state.chats[chatIdx],
+                        messages: [...newMessages, ...prevMessages]
+                    };
+                }
+
+                // Update selectedChat if it's for the right chatId
+                if (state.selectedChat?.id === chatId) {
+                    const prevMessagesSel = state.selectedChat.messages ?? [];
+                    const existingIdsSel = new Set(prevMessagesSel.map(m => m.id));
+                    const newMessagesSel = messages.filter(m => !existingIdsSel.has(m.id));
+                    state.selectedChat = {
+                        ...state.selectedChat,
+                        messages: [...newMessagesSel, ...prevMessagesSel]
+                    };
+                }
+
+                state.loading.fetchChatMessages = false;
+                state.error = undefined;
+            })
+            .addCase(fetchMoreMessages.rejected, (state, action) => {
+                state.loading.fetchChatMessages = false;
+                state.error = action.payload as string || "Failed to fetch more messages";
             });
     }
 });

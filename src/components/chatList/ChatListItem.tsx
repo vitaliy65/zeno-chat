@@ -24,17 +24,9 @@ export function ChatListItem({ preview, selected = false, onClick }: ChatListIte
 
     const username = preview.user?.username || "Username";
     const lastMessageText = preview.lastMessage ? preview.lastMessage.text : "No messages yet";
-    let timeStr = "";
-    if (preview.lastMessage?.createdAt) {
-        try {
-            const date = new Date(preview.lastMessage.createdAt);
-            timeStr = isNaN(date.getTime())
-                ? preview.lastMessage.createdAt
-                : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } catch {
-            timeStr = preview.lastMessage.createdAt;
-        }
-    }
+    const timeStr = preview.lastMessage?.createdAt
+        ? new Date(preview.lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : "";
 
     const unread = preview.unreadCount > 0;
 

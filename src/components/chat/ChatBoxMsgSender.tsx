@@ -14,8 +14,8 @@ export default function ChatBoxMsgSender({ text, nextSameType }: ChatBoxMsg) {
                     {text}
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 124 124" fill="none">
-                    <rect width="124" height="124" rx="" fill="currentColor" className={`${nextSameType ? "text-transparent" : 'text-accent-bg/45'}`} />
-                    <circle cx="110%" cy="" r="137" fill="var(--background)" />
+                    <rect width="124" height="124" fill="currentColor" className={`${nextSameType ? "text-transparent" : 'text-accent-bg/45'}`} />
+                    <circle cx="110%" r="137" fill="var(--background)" />
                 </svg>
             </div>
         </div>

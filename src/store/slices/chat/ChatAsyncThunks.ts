@@ -14,6 +14,10 @@ import {
     orderBy,
     where,
     writeBatch,
+    limit,
+    startAfter,
+    DocumentData,
+    QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { FirebaseError } from "firebase/app";
 
@@ -31,10 +35,37 @@ export const fetchChats = createAsyncThunk<
                     where("participantIds", "array-contains", userId)
                 )
             );
-            const chats: Chat[] = chatsSnap.docs.map(chatDoc => ({
-                ...(chatDoc.data() as Chat),
-                id: chatDoc.id
-            }));
+
+            const chats: Chat[] = await Promise.all(
+                chatsSnap.docs.map(async chatDoc => {
+                    const data = chatDoc.data();
+
+                    const chat: Chat = {
+                        id: chatDoc.id,
+                        participantIds: data.participantIds,
+                        updatedAt: data.updatedAt,
+                    };
+
+                    const messagesSnap = await getDocs(
+                        query(
+                            collection(db, "chats", chatDoc.id, "messages"),
+                            orderBy("createdAt", "desc"),
+                            limit(50)
+                        )
+                    );
+
+                    const messages: Message[] = messagesSnap.docs.map(msgDoc => ({
+                        ...(msgDoc.data() as Omit<Message, "id">),
+                        id: msgDoc.id
+                    })).reverse();
+
+                    return {
+                        ...chat,
+                        messages
+                    };
+                })
+            );
+            console.log(chats)
             return chats;
         } catch (error) {
             if (error instanceof FirebaseError) {
@@ -45,35 +76,6 @@ export const fetchChats = createAsyncThunk<
     }
 );
 
-export const fetchChatMessages = createAsyncThunk<
-    Message[],
-    { chatId: string },
-    { rejectValue: string }
->(
-    "chat/fetchChatMessages",
-    async ({ chatId }, { rejectWithValue }) => {
-        try {
-            const messagesSnap = await getDocs(
-                query(
-                    collection(db, "chats", chatId, "messages"),
-                    orderBy("createdAt", "asc")
-                )
-            );
-            const messages = messagesSnap.docs.map(doc => ({
-                ...(doc.data() as Message),
-                id: doc.id,
-            }));
-            return messages;
-        } catch (error) {
-            if (error instanceof FirebaseError) {
-                return rejectWithValue(error.message || "Failed to fetch messages");
-            }
-            return rejectWithValue("Failed to fetch messages");
-        }
-    }
-);
-
-
 export const createChat = createAsyncThunk<
     Chat,
     { userId: string; otherUserId: string },
@@ -82,28 +84,21 @@ export const createChat = createAsyncThunk<
     "chat/createChat",
     async ({ userId, otherUserId }, { rejectWithValue }) => {
         try {
-            // Проверка что нельзя создать чат с самим собой
             if (userId === otherUserId) {
                 return rejectWithValue("You cannot create a chat with yourself");
             }
-
-            // Для избежания дублей сортируем participantIds
             const participantIds = [userId, otherUserId].sort() as [string, string];
-
-            // Проверка существования чата с такими участниками
             const chatSnap = await getDocs(query(
                 collection(db, "chats"),
                 where("participantIds", "==", participantIds)
             ));
 
             if (!chatSnap.empty) {
-                // Уже есть чат с такими participantIds, возвращаем первый попавшийся
                 const chatId = chatSnap.docs[0].id;
                 const chatData: Chat = { ...(chatSnap.docs[0].data() as Chat), id: chatId };
                 return chatData;
             }
 
-            // Если не найден — создаём новый чат
             const now = new Date().toISOString();
             const newChat: Omit<Chat, "id"> = {
                 participantIds,
@@ -129,12 +124,10 @@ export const sendMessage = createAsyncThunk<
     "chat/sendMessage",
     async ({ fromId, toId, text }, { rejectWithValue }) => {
         try {
-            // Сортируем IDs участников чтобы найти или создать уникальный чат
             const participantIds = [fromId, toId].sort() as [string, string];
             let chatId: string | undefined;
             let chatData: Chat | undefined;
 
-            // Проверяем существование чата по отсортированному массиву participantIds
             const chatSnap = await getDocs(query(
                 collection(db, "chats"),
                 where("participantIds", "==", participantIds)
@@ -144,7 +137,6 @@ export const sendMessage = createAsyncThunk<
                 chatId = chatSnap.docs[0].id;
                 chatData = { ...(chatSnap.docs[0].data() as Chat), id: chatId };
             } else {
-                // Нет чата — создаём новый 
                 const now = new Date().toISOString();
                 const newChat: Omit<Chat, "id"> = {
                     participantIds,
@@ -155,7 +147,6 @@ export const sendMessage = createAsyncThunk<
                 chatData = { ...newChat, id: chatId };
             }
 
-            // Добавляем сообщение в чат
             const nowStr = new Date().toISOString();
             const msgPayload = {
                 chatId,
@@ -166,7 +157,6 @@ export const sendMessage = createAsyncThunk<
             };
             const msgRef = await addDoc(collection(db, "chats", chatId!, "messages"), msgPayload);
 
-            // Обновляем updatedAt у чата
             await updateDoc(doc(db, "chats", chatId!), {
                 updatedAt: nowStr,
             });
@@ -202,7 +192,6 @@ export const markChatAsRead = createAsyncThunk<
             const batch = writeBatch(db);
             messagesSnap.forEach(msgDoc => {
                 const data = msgDoc.data();
-                // Only mark as read if the message sender is NOT the user themselves
                 if (data.senderId !== userId) {
                     batch.update(msgDoc.ref, { isRead: true });
                 }
@@ -217,6 +206,7 @@ export const markChatAsRead = createAsyncThunk<
     }
 );
 
+
 export const fetchChatById = createAsyncThunk<
     Chat & { messages: Message[]; participants: User[] },
     { chatId: string },
@@ -229,19 +219,19 @@ export const fetchChatById = createAsyncThunk<
             if (!chatDoc.exists()) throw new Error("Чат не найден");
             const chat = { ...(chatDoc.data() as Chat), id: chatDoc.id };
 
-            // сообщения
+            // Подгружаем только последние 50 сообщений (для начальной загрузки)
             const messagesSnap = await getDocs(
                 query(
                     collection(db, "chats", chatId, "messages"),
-                    orderBy("createdAt", "asc")
+                    orderBy("createdAt", "desc"),
+                    limit(50)
                 )
             );
             const messages: Message[] = messagesSnap.docs.map(doc => ({
                 ...(doc.data() as Message),
                 id: doc.id,
-            }));
+            })).reverse();
 
-            // участники
             const users: User[] = [];
             for (const uid of chat.participantIds) {
                 const userSnap = await getDoc(doc(db, "users", uid));
@@ -260,3 +250,41 @@ export const fetchChatById = createAsyncThunk<
     }
 );
 
+export const fetchMoreMessages = createAsyncThunk<
+    { chatId: string, messages: Message[] },
+    { chatId: string, firstMessageId: string, pageSize?: number },
+    { rejectValue: string }
+>(
+    "chat/fetchMoreMessages",
+    async ({ chatId, firstMessageId, pageSize = 50 }, { rejectWithValue }) => {
+        try {
+            // Get the document to use as a startAfter cursor
+            const firstMsgRef = doc(db, "chats", chatId, "messages", firstMessageId);
+            const firstMsgSnap = await getDoc(firstMsgRef);
+
+            if (!firstMsgSnap.exists()) {
+                return rejectWithValue("First message not found");
+            }
+
+            const messagesQuery = query(
+                collection(db, "chats", chatId, "messages"),
+                orderBy("createdAt", "desc"),
+                startAfter(firstMsgSnap),
+                limit(pageSize)
+            );
+            const messagesSnap = await getDocs(messagesQuery);
+
+            const messages: Message[] = messagesSnap.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
+                ...(doc.data() as Omit<Message, "id">),
+                id: doc.id,
+            })).reverse();
+
+            return { chatId, messages };
+        } catch (error) {
+            if (error instanceof FirebaseError) {
+                return rejectWithValue(error.message || "Failed to fetch more messages");
+            }
+            return rejectWithValue("Failed to fetch more messages");
+        }
+    }
+);
