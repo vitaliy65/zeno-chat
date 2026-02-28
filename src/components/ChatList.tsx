@@ -12,6 +12,7 @@ import { fetchFriends } from "@/store/slices/friends/FriendsAsyncThunks";
 import { User } from "@/types/user";
 import { openMobileChatModal } from "@/store/slices/MobileChat/MobileChatModalSlice";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { setSelectedFriend } from "@/store/slices/friends/FriendsSlice";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -70,9 +71,9 @@ export default function ChatList() {
     return (
         <div
             ref={containerRef}
-            className='relative row-span-11 col-span-3 lg:col-span-1 base-container-settings overflow-y-auto overflow-x-hidden thin-scrollbar'
+            className='flex w-72 shrink-0 flex-col border-r border-border bg-background-elevated'
         >
-            <div ref={chatListRef} className="flex flex-col gap-3 h-full">
+            <div ref={chatListRef} className="thin-scrollbar flex-1 overflow-y-auto px-2 pb-2">
                 {(chatsLoading) && (
                     <>
                         {Array.from({ length: 12 }).map((_, index) => (
@@ -100,6 +101,7 @@ export default function ChatList() {
                             selected={selectedChat?.id === chat.id}
                             onClick={() => {
                                 dispatch(setSelectedChat(chat.id));
+                                dispatch(setSelectedFriend(preview.user.id))
                                 if (!isDesktop) dispatch(openMobileChatModal())
                             }}
                         />

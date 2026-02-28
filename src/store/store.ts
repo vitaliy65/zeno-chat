@@ -4,6 +4,7 @@ import chatReducer from "./slices/chat/ChatSlice";
 import profileReducer from "./slices/profile/ProfileSlice";
 import friendsReducer from "./slices/friends/FriendsSlice";
 import MobileChatReducer from "./slices/MobileChat/MobileChatModalSlice";
+import infoPanelReducer from "./slices/InfoPanel/InfoPanelSlice";
 
 export const store = configureStore({
     reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
         chat: chatReducer,
         profile: profileReducer,
         friends: friendsReducer,
-        MobileChatNodal: MobileChatReducer
+        MobileChatNodal: MobileChatReducer,
+        infoPanel: infoPanelReducer
     },
 });
 

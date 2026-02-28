@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import Spinner from "@/components/Spinner";
 import { cn } from "@/lib/utils";
 import { fetchFriends } from "@/store/slices/friends/FriendsAsyncThunks";
+import UserAvatar from "../UserAvatar";
 
 export default function UsersSearchList({ users }: { users: User[] }) {
     const dispatch = useAppDispatch();
@@ -43,7 +44,7 @@ export default function UsersSearchList({ users }: { users: User[] }) {
                         onClick={() => !isCreating && handleCreateChat(user.id)}
                     >
                         <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden shadow-custom-sm border border-secondary/20">
-                            <AvatarBlock user={user} />
+                            <UserAvatar user={user} />
                         </div>
                         <div className="flex flex-col min-w-0 flex-1">
                             <div className="flex items-center gap-2">

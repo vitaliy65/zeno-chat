@@ -10,6 +10,7 @@ export interface Friend extends User {
 
 interface FriendsState {
     friends: Friend[];
+    selectedFriend?: Friend;
     error?: string;
     loading: {
         fetchFriends: boolean;
@@ -18,6 +19,7 @@ interface FriendsState {
 
 const initialState: FriendsState = {
     friends: [],
+    selectedFriend: undefined,
     error: undefined,
     loading: {
         fetchFriends: false,
@@ -39,6 +41,14 @@ const friendsSlice = createSlice({
                     ...state.friends[index],
                     ...updated,
                 };
+            }
+        },
+        setSelectedFriend(state, action: PayloadAction<string | undefined>) {
+            if (action.payload === undefined) {
+                state.selectedFriend = undefined;
+            } else {
+                const found = state.friends.find((f) => f.id === action.payload);
+                state.selectedFriend = found ? found : undefined;
             }
         }
     },
@@ -62,6 +72,7 @@ const friendsSlice = createSlice({
 
 export const {
     updateFriend,
+    setSelectedFriend,
 } = friendsSlice.actions;
 
 export default friendsSlice.reducer;

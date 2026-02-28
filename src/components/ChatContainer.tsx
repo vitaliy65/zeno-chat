@@ -5,6 +5,7 @@ import ChatNotSelected from "./chat/ChatNotSelected";
 import ChatBox from "./chat/ChatBox";
 import ChatMessageField from "./chat/ChatMessageField";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { ChatAreaHeader } from "./chat/ChatAreaHeader";
 
 export default function ChatContainer() {
     const chat = useAppSelector((s) => s.chat.selectedChat);
@@ -15,15 +16,16 @@ export default function ChatContainer() {
     if (!isDesktop && !isOpen) return null;
 
     return (
-        <div className='relative flex flex-col justify-center items-center row-span-11 col-span-3 base-container-settings overflow-y-auto p-4 space-y-4'>
+        <main className='flex min-w-0 flex-1 flex-col'>
             {chat ? (
                 <>
+                    <ChatAreaHeader />
                     <ChatBox />
                     <ChatMessageField />
                 </>
             ) : (
                 <ChatNotSelected />
             )}
-        </div>
+        </main>
     );
 }

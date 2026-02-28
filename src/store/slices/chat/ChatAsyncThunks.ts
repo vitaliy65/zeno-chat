@@ -118,11 +118,11 @@ export const createChat = createAsyncThunk<
 
 export const sendMessage = createAsyncThunk<
     { chat: Chat; message: Message },
-    { fromId: string, toId: string, text: string },
+    { fromId: string, senderName: string, senderAvatar: string, toId: string, text: string },
     { rejectValue: string }
 >(
     "chat/sendMessage",
-    async ({ fromId, toId, text }, { rejectWithValue }) => {
+    async ({ fromId, senderName, senderAvatar, toId, text }, { rejectWithValue }) => {
         try {
             const participantIds = [fromId, toId].sort() as [string, string];
             let chatId: string | undefined;
@@ -151,6 +151,8 @@ export const sendMessage = createAsyncThunk<
             const msgPayload = {
                 chatId,
                 senderId: fromId,
+                senderName: senderName,
+                senderAvatar: senderAvatar,
                 text,
                 createdAt: nowStr,
                 isRead: false,

@@ -1,5 +1,6 @@
 
 import AuthCheck from "@/components/auth/AuthCheck";
+import { ChatInfoPanel } from "@/components/chat/ChatInfoPanel";
 import ChatContainer from "@/components/ChatContainer";
 import ChatList from "@/components/ChatList";
 import Header from "@/components/Header";
@@ -10,12 +11,15 @@ export default function Home() {
 
   return (
     <AuthCheck>
-      <div className="grid grid-cols-[96px_1fr_1fr_1fr] lg:grid-cols-[356px_1fr_1fr_1fr] grid-rows-12 h-screen p-4 gap-4 bg-background-second overflow-hidden">
-        <ListenersProvider />
+      <div className="flex h-dvh flex-col bg-background">
         <Header />
-        <MobileChatSelect />
-        <ChatList />
-        <ChatContainer />
+        <div className="flex min-h-0 flex-1">
+          <ListenersProvider />
+          <MobileChatSelect />
+          <ChatList />
+          <ChatContainer />
+          <ChatInfoPanel />
+        </div>
       </div>
     </AuthCheck>
   );
