@@ -2,7 +2,7 @@ import Image from 'next/image'
 
 export default function ChatNotSelected() {
     return (
-        <div className='flex flex-col items-center justify-center'>
+        <div className='flex flex-1 flex-col items-center justify-center'>
             <Image
                 src={"/lets-chat.png"}
                 width={512}
