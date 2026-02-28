@@ -78,7 +78,6 @@ export default function ChatBox() {
 
                 const last = groups[groups.length - 1];
 
-                // Группируем, только если sender совпадает (не senderId, а "me"/"them")
                 if (
                     last &&
                     last.sender === sender &&

@@ -1,10 +1,10 @@
 "use client"
 
-import { Phone, Video, MoreHorizontal, X, Image, FileText, Link2, ImageIcon } from "lucide-react"
+import { Phone, Video, MoreHorizontal, X, FileText, Link2, ImageIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { closeInfoPanel } from "@/store/slices/InfoPanel/InfoPanelSlice";
-import { formatTime, formatTimeFullData } from "@/lib/utils";
+import { formatTimeFullData } from "@/lib/utils";
 
 export function ChatInfoPanel() {
     const friend = useAppSelector(s => s.friends.selectedFriend)
