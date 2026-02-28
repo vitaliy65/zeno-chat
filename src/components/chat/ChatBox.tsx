@@ -153,7 +153,7 @@ export default function ChatBox() {
                                         }`}
                                 >
                                     <div
-                                        className={`inline-block px-3.5 py-2 text-sm leading-relaxed ${isOwn
+                                        className={`inline-block px-3.5 py-2 text-sm leading-relaxed ${isOwn && isFirst && "mt-5"} ${isOwn
                                             ? "bg-chat-bubble-own text-chat-bubble-own-foreground"
                                             : "bg-chat-bubble-other text-chat-bubble-other-foreground"
                                             } ${isOwn
