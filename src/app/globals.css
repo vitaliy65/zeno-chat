@@ -154,7 +154,7 @@
 }
 
 .base-container-settings {
-  @apply bg-background p-3;
+  @apply bg-background-surface p-3;
   box-shadow: var(--shadow-md) !important;
   border-radius: var(--radius-xl) !important;
 }

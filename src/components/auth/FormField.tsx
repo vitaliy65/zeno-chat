@@ -24,7 +24,7 @@ export function FormField({ id, label, type, placeholder, value, onChange }: For
                 value={value}
                 onChange={onChange}
                 required
-                className="h-12 bg-background-second shadow-custom-md-inset"
+                className="h-12 bg-background-elevated shadow-custom-md-inset"
             />
         </div>
     )
