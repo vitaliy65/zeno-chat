@@ -26,3 +26,13 @@ export function formatTimeFullData(createdAt?: string) {
     hour12: true
   });
 }
+
+import type { MessageType } from "@/types/message";
+
+export function convertToPlainType(filetype: string): MessageType {
+  if (!filetype) return "file";
+  if (filetype.startsWith("image/")) return "image";
+  if (filetype.startsWith("video/")) return "video";
+  if (filetype.startsWith("audio/")) return "audio";
+  return "file";
+}

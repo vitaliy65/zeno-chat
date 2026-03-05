@@ -5,7 +5,10 @@ export interface Message {
     senderName: string;
     senderAvatar: string;
     text: string;
+    fileName?: string
+    type: MessageType;
     createdAt: string; // ISO
     isRead: boolean;
 }
 
+export type MessageType = 'text' | 'image' | 'video' | 'audio' | 'file' | 'sticker' | 'gif'
