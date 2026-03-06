@@ -1,8 +1,8 @@
 export default function HeaderLogo() {
     return (
-        <div className='h-full flex flex-row justify-start items-center w-full gap-2'>
-            <div className='rounded-sm bg-accent-bg h-full aspect-square flex justify-center items-center font-bold text-2xl text-foreground'>Z</div>
-            <span className="text-xl font-bold">Zeno-chat</span>
+        <div className='flex flex-row justify-start items-center gap-2 h-9 w-fit'>
+            <div className='rounded-sm bg-primary h-full aspect-square flex justify-center items-center font-bold text-2xl text-foreground'>Z</div>
+            <span className="text-xl font-bold max-md:hidden">Zeno-chat</span>
         </div>
     )
 }

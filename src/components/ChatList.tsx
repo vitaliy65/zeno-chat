@@ -7,6 +7,9 @@ import { ChatListItem } from "./chatList/ChatListItem";
 import ChatListItemMock from "./mock/ChatListItemMock";
 import { useChatList } from "@/hooks/useChatList";
 import ChatListHeader from "./chatList/ChatListHeader";
+import { cn } from "@/lib/utils";
+import useMediaQuery from "@/hooks/useMediaQuery";
+import { ArrowLeftIcon } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,6 +17,7 @@ export default function ChatList() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chatListRef = useRef<HTMLDivElement | null>(null);
   const [search, setSearch] = useState("");
+  const { isMobile } = useMediaQuery();
 
   const {
     chatsLoading,
@@ -58,7 +62,7 @@ export default function ChatList() {
   return (
     <div
       ref={containerRef}
-      className="flex w-72 shrink-0 flex-col border-r border-border bg-background-elevated"
+      className={cn("flex shrink-0 flex-col border-r border-border bg-background-elevated", isMobile ? "w-full!" : 'w-72')}
     >
       <ChatListHeader input={search} onChange={setSearch} />
       <div

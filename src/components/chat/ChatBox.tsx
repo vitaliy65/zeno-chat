@@ -24,7 +24,6 @@ export default function ChatBox() {
 
         container.scrollTo({
             top: container.scrollHeight,
-            behavior: "smooth",
         });
     }, [id, messages.length]);
 

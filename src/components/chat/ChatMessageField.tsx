@@ -2,8 +2,18 @@
 
 import { Mic, Paperclip, Send, Smile } from "lucide-react";
 import { useChatMessageComposer } from "@/hooks/useChatMessageComposer";
+import dynamic from 'next/dynamic';
+import { useState } from "react";
+import { Theme } from 'emoji-picker-react'
+
+const EmojiPicker = dynamic(
+    () => import('emoji-picker-react'),
+    { ssr: false }
+);
 
 export default function ChatMessageField() {
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
     const {
         message,
         setMessage,
@@ -15,15 +25,33 @@ export default function ChatMessageField() {
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
-
         if (!files || !files[0]) return;
-
         await sendFile(files[0]);
         e.target.value = "";
     };
 
+    // Function to append emoji to the current message
+    const onEmojiClick = (emojiData: { emoji: string }) => {
+        setMessage((prev) => prev + emojiData.emoji);
+        // Optional: Close picker after selection
+        // setShowEmojiPicker(false); 
+    };
+
     return (
-        <div className="border-t border-border bg-background-elevated px-4 py-3 lg:px-6">
+        <div className="relative border-t border-border bg-background-elevated px-4 py-3 lg:px-6">
+
+            {/* Emoji Picker Modal/Popover */}
+            {showEmojiPicker && (
+                <div className="absolute bottom-20 right-4 z-50 shadow-xl">
+                    <EmojiPicker
+                        onEmojiClick={onEmojiClick}
+                        autoFocusSearch={false}
+                        lazyLoadEmojis
+                        className="bg-background-surface! border-border!"
+                    />
+                </div>
+            )}
+
             <div className="flex items-end gap-2 rounded-xl bg-background-surface px-3 py-2">
                 {/* Attach */}
                 <label
@@ -54,11 +82,13 @@ export default function ChatMessageField() {
                     }}
                 />
 
-                {/* Emoji */}
+                {/* Emoji Button */}
                 <button
-                    className="mb-0.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background-elevated hover:text-foreground"
+                    className={`mb-0.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-background-elevated hover:text-foreground ${showEmojiPicker ? "text-primary bg-background-elevated" : "text-muted-foreground"
+                        }`}
                     aria-label="Emoji"
                     type="button"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 >
                     <Smile className="size-4" />
                 </button>
@@ -66,7 +96,10 @@ export default function ChatMessageField() {
                 {/* Send or Voice */}
                 {message.trim() ? (
                     <button
-                        onClick={() => send("text")}
+                        onClick={() => {
+                            send("text");
+                            setShowEmojiPicker(false); // Close picker on send
+                        }}
                         className="mb-0.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-primary text-primary-foreground transition-all hover:bg-primary-hover active:scale-95"
                         aria-label="Send message"
                         disabled={!canSend}
@@ -87,4 +120,3 @@ export default function ChatMessageField() {
         </div>
     );
 }
-
