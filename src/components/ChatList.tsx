@@ -25,8 +25,6 @@ export default function ChatList() {
     selectChat,
   } = useChatList();
 
-  const filteredPreviews = previews.filter((preview) => preview.user.username.toLowerCase().includes(search));
-
   useEffect(() => {
     const timeoutId = requestAnimationFrame(() => {
       const items = document.querySelectorAll(".chat-list-item");
@@ -51,7 +49,9 @@ export default function ChatList() {
         cancelAnimationFrame(timeoutId);
       }
     };
-  }, [filteredPreviews.length, chatsLoading]);
+  }, [chatsLoading]);
+
+  const filteredPreviews = previews.filter((preview) => preview.user?.username.toLowerCase().includes(search));
 
   if (!isDesktop && isMobileChatOpen) return null;
 
