@@ -53,8 +53,13 @@ export class MessageModel {
     }
 
     static async addMessage(chatId: string, msgPayload: Omit<Message, "id">) {
-        const msgRef = await addDoc(collection(db, "chats", chatId, "messages"), msgPayload);
-        return { ...msgPayload, id: msgRef.id };
+        try {
+            const msgRef = await addDoc(collection(db, "chats", chatId, "messages"), msgPayload);
+            return { ...msgPayload, id: msgRef.id };
+        } catch (error) {
+            console.error("Failed to add message:", error);
+            throw new Error("Failed to add message");
+        }
     }
 
     static async markAllUnreadAsRead(chatId: string, userId: string) {

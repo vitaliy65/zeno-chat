@@ -1,112 +1,92 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { fetchChats } from "@/store/slices/chat/ChatAsyncThunks";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { ChatListItem } from "./chatList/ChatListItem";
 import ChatListItemMock from "./mock/ChatListItemMock";
-import { setSelectedChat } from "@/store/slices/chat/ChatSlice";
-import { fetchFriends } from "@/store/slices/friends/FriendsAsyncThunks";
-import { User } from "@/types/user";
-import { openMobileChatModal } from "@/store/slices/MobileChat/MobileChatModalSlice";
-import useMediaQuery from "@/hooks/useMediaQuery";
-import { setSelectedFriend } from "@/store/slices/friends/FriendsSlice";
+import { useChatList } from "@/hooks/useChatList";
+import ChatListHeader from "./chatList/ChatListHeader";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ChatList() {
-    const containerRef = useRef<HTMLDivElement | null>(null);
-    const chatListRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const chatListRef = useRef<HTMLDivElement | null>(null);
+  const [search, setSearch] = useState("");
 
-    const dispatch = useAppDispatch();
+  const {
+    chatsLoading,
+    chats,
+    previews,
+    selectedChatId,
+    isDesktop,
+    isMobileChatOpen,
+    selectChat,
+  } = useChatList();
 
-    const currentUserId = useAppSelector((state) => state.user.user?.id);
-    const { fetchChats: chatsLoading } = useAppSelector((state) => state.chat.loading);
-    const chats = useAppSelector((state) => state.chat.chats);
-    const selectedChat = useAppSelector((state) => state.chat.selectedChat);
-    const friends = useAppSelector((state) => state.friends.friends);
+  const filteredPreviews = previews.filter((preview) => preview.user.username.toLowerCase().includes(search));
 
-    const { isDesktop } = useMediaQuery();
-    const { isOpen } = useAppSelector(s => s.MobileChatNodal)
+  useEffect(() => {
+    const timeoutId = requestAnimationFrame(() => {
+      const items = document.querySelectorAll(".chat-list-item");
 
-    useEffect(() => {
-        if (currentUserId) {
-            dispatch(fetchFriends({ currentUserId }));
-            dispatch(fetchChats({ userId: currentUserId }));
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentUserId]);
+      if (items.length === 0) return;
 
-    useEffect(() => {
-        // Animate chat list item entrance
-        const timeoutId = requestAnimationFrame(() => {
-            const items = document.querySelectorAll('.chat-list-item');
+      const tl = gsap.timeline();
 
-            if (items.length === 0) return;
+      gsap.set(items, { scale: 0, opacity: 0 });
 
-            const tl = gsap.timeline();
+      tl.to(items, {
+        scale: 1,
+        opacity: 1,
+        stagger: { amount: 0.65 },
+        duration: 0.6,
+        ease: "back.out",
+      });
+    });
 
-            gsap.set(items, { scale: 0, opacity: 0 });
+    return () => {
+      if (timeoutId) {
+        cancelAnimationFrame(timeoutId);
+      }
+    };
+  }, [filteredPreviews.length, chatsLoading]);
 
-            tl.to(items, {
-                scale: 1,
-                opacity: 1,
-                stagger: { amount: 0.65 },
-                duration: 0.6,
-                ease: "back.out"
-            });
-        });
+  if (!isDesktop && isMobileChatOpen) return null;
 
-        return () => {
-            if (timeoutId) {
-                cancelAnimationFrame(timeoutId);
-            }
-        };
-    }, [chats.length, chatsLoading]);
-
-    if (!isDesktop && isOpen) return null;
-
-    return (
-        <div
-            ref={containerRef}
-            className='flex w-72 shrink-0 flex-col border-r border-border bg-background-elevated'
-        >
-            <div ref={chatListRef} className="thin-scrollbar flex-1 overflow-y-auto px-2 pb-2">
-                {(chatsLoading) && (
-                    <>
-                        {Array.from({ length: 12 }).map((_, index) => (
-                            <ChatListItemMock key={index} />
-                        ))}
-                    </>
-                )}
-                {!chatsLoading && chats.length === 0 && (
-                    <div className="flex justify-center items-center h-full">
-                        <div className="text-3xl font-bold">No chats yet.</div>
-                    </div>
-                )}
-                {!chatsLoading &&
-                    chats.map((chat) => {
-                        const user = friends.find(friend => friend.chatId === chat.id) as User;
-                        const preview = {
-                            chatId: chat.id,
-                            user: user,
-                            lastMessage: chat.messages?.[chat.messages.length - 1],
-                            unreadCount: chat.messages?.filter(message => !message.isRead && message.senderId !== currentUserId).length || 0,
-                        }
-                        return <ChatListItem
-                            key={chat.id}
-                            preview={preview}
-                            selected={selectedChat?.id === chat.id}
-                            onClick={() => {
-                                dispatch(setSelectedChat(chat.id));
-                                dispatch(setSelectedFriend(preview.user.id))
-                                if (!isDesktop) dispatch(openMobileChatModal())
-                            }}
-                        />
-                    })}
-            </div>
-        </div>
-    )
+  return (
+    <div
+      ref={containerRef}
+      className="flex w-72 shrink-0 flex-col border-r border-border bg-background-elevated"
+    >
+      <ChatListHeader input={search} onChange={setSearch} />
+      <div
+        ref={chatListRef}
+        className="thin-scrollbar flex-1 overflow-y-auto px-3 pb-2 space-y-1"
+      >
+        {chatsLoading && (
+          <>
+            {Array.from({ length: 12 }).map((_, index) => (
+              <ChatListItemMock key={index} />
+            ))}
+          </>
+        )}
+        {!chatsLoading && chats.length === 0 && (
+          <div className="flex justify-center items-center h-full">
+            <div className="text-3xl font-bold">No chats yet.</div>
+          </div>
+        )}
+        {!chatsLoading &&
+          filteredPreviews.map((preview) => (
+            <ChatListItem
+              key={preview.chatId}
+              preview={preview}
+              selected={selectedChatId === preview.chatId}
+              onClick={() => selectChat(preview)}
+            />
+          ))}
+      </div>
+    </div>
+  );
 }

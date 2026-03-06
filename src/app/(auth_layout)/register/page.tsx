@@ -7,6 +7,7 @@ import { getFirebaseErrorMessage } from '@/lib/errorHandler'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { registerUser } from '@/store/slices/user/UserAsyncThunks'
 import { AuthAnimatedForm } from '@/components/auth/AuthAnimatedForm'
+import { ROUTES } from '@/constants/routes'
 
 // --- Страница регистрации с помощью общей формы ---
 
@@ -28,11 +29,11 @@ export default function Register() {
             onSubmit={handleSubmit}
             loading={loading}
             link={{
-                to: "/sign-in",
+                to: ROUTES.SIGN_IN,
                 label: "Sign In",
                 prompt: "Already have an account?"
             }}
-            onSuccessRedirect="/sign-in"
+            onSuccessRedirect={ROUTES.SIGN_IN}
         >
             <FormField
                 id="username"

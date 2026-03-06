@@ -1,4 +1,4 @@
-import { redirect, RedirectType } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { gsap } from "gsap"
 import Link from "next/link"
 import { useEffect, useRef, useState } from 'react'
@@ -30,6 +30,7 @@ export function AuthAnimatedForm({
     const [isTransitioning, setIsTransitioning] = useState(false)
     const formRef = useRef<HTMLDivElement | null>(null)
     const ANIMATION_EXIT_TIME_MS = 300
+    const router = useRouter()
 
     // Анимация появления формы
     useEffect(() => {
@@ -63,7 +64,7 @@ export function AuthAnimatedForm({
             })
         }
 
-        redirect(link.to, RedirectType.push)
+        router.push(link.to)
     }
 
     // Submit + опциональный редирект с анимацией
@@ -75,7 +76,7 @@ export function AuthAnimatedForm({
 
         if (onSuccessRedirect) {
             setTimeout(() => {
-                redirect(onSuccessRedirect, RedirectType.push)
+                router.push(onSuccessRedirect)
             }, ANIMATION_EXIT_TIME_MS)
         }
     }

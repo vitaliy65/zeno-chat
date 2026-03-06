@@ -2,8 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Chat } from "@/types/chat";
 import type { Message } from "@/types/message";
 import { FirebaseError } from "firebase/app";
-import { MessageModel } from "@/models/MessageModel";
-import { ChatModel } from "@/models/ChatModel";
+import { chatService } from "@/services/chatService";
 
 export type MessageFieldsToSend = Omit<Message, 'id' | 'isRead' | 'createdAt'> & { toId: string; };
 
@@ -13,7 +12,7 @@ export const fetchChats = createAsyncThunk<
         "chat/fetchChats",
         async ({ userId }, { rejectWithValue }) => {
             try {
-                const chats = await ChatModel.fetchChatsForUser(userId, { messagesLimit: 50 });
+                const chats = await chatService.getChatsForUser(userId, 50);
                 return chats;
             } catch (error) {
                 if (error instanceof FirebaseError) {
@@ -30,7 +29,7 @@ export const createChat = createAsyncThunk<
         "chat/createChat",
         async ({ userId, otherUserId }, { rejectWithValue }) => {
             try {
-                const chat = await ChatModel.createChatBetweenUsers(userId, otherUserId);
+                const chat = await chatService.createChatBetweenUsers(userId, otherUserId);
                 return chat;
             } catch (error) {
                 if (error instanceof FirebaseError) {
@@ -49,7 +48,7 @@ export const sendMessage = createAsyncThunk<
         "chat/sendMessage",
         async (messageFields, { rejectWithValue }) => {
             try {
-                const { chat, message } = await ChatModel.sendMessage(messageFields);
+                const { chat, message } = await chatService.sendMessage(messageFields);
 
                 return { chat, message };
             } catch (error) {
@@ -66,7 +65,7 @@ export const markChatAsRead = createAsyncThunk<
         "chat/markChatAsRead",
         async ({ chatId, userId }, { rejectWithValue }) => {
             try {
-                await ChatModel.markChatAsRead(chatId, userId);
+                await chatService.markChatAsRead(chatId, userId);
             } catch (error) {
                 if (error instanceof FirebaseError) {
                     return rejectWithValue(error.message || "Failed to mark messages as read");
@@ -81,7 +80,7 @@ export const fetchMoreMessages = createAsyncThunk<
         "chat/fetchMoreMessages",
         async ({ chatId, firstMessageId, pageSize = 50 }, { rejectWithValue }) => {
             try {
-                const messages = await MessageModel.fetchMoreMessages(chatId, firstMessageId, pageSize);
+                const messages = await chatService.fetchMoreMessages(chatId, firstMessageId, pageSize);
 
                 return { chatId, messages };
             } catch (error) {

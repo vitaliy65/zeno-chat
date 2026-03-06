@@ -1,57 +1,25 @@
 "use client";
 
 import { Mic, Paperclip, Send, Smile } from "lucide-react";
-import { useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { sendMessage } from "@/store/slices/chat/ChatAsyncThunks";
-import { useFile } from "@/hooks/useFIle";
-import { MessageType } from "@/types/message";
-import { PutBlobResult } from "@vercel/blob";
-import { PutFileResponse } from "@/app/api/uploadMedia/route";
-import { convertToPlainType } from "@/lib/utils";
+import { useChatMessageComposer } from "@/hooks/useChatMessageComposer";
 
 export default function ChatMessageField() {
-    const dispatch = useAppDispatch();
-    const currentUser = useAppSelector((state) => state.user.user);
-    const selectedChat = useAppSelector((state) => state.chat.selectedChat);
-    const sendMessageLoading = useAppSelector((state) => state.chat.loading.sendMessage);
-
-    const [message, setMessage] = useState("")
-
-    const { saveMedia, loading: fileUploading } = useFile();
-
-    const handleSend = (type: MessageType, url?: string, fileName?: string) => {
-        const text = url ? url : message.trim();
-        if (!text || !currentUser?.id || !selectedChat || sendMessageLoading) return;
-
-        const toId = selectedChat.participantIds.find((id) => id !== currentUser?.id);
-        if (!toId) return;
-
-        dispatch(sendMessage(
-            {
-                chatId: selectedChat.id,
-                senderId: currentUser.id,
-                senderName: currentUser.username!,
-                senderAvatar: currentUser.avatarUrl!,
-                fileName: fileName,
-                toId,
-                text,
-                type,
-            }
-        ));
-
-        setMessage("");
-    };
+    const {
+        message,
+        setMessage,
+        send,
+        sendFile,
+        canSend,
+        fileUploading
+    } = useChatMessageComposer();
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
-        if (!files || !currentUser?.id || !selectedChat || sendMessageLoading) return;
+        if (!files || !files[0]) return;
 
-        const response = await saveMedia(files[0], currentUser?.id || "noUserID", selectedChat?.id || "noChatID") as PutFileResponse;
+        await sendFile(files[0]);
         e.target.value = "";
-
-        handleSend(convertToPlainType(response.contentType), response.url, response.filename)
     };
 
     return (
@@ -80,8 +48,8 @@ export default function ChatMessageField() {
                     className="max-h-[120px] min-h-[36px] flex-1 resize-none bg-transparent py-1.5 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground outline-none"
                     onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault()
-                            handleSend("text");
+                            e.preventDefault();
+                            send("text");
                         }
                     }}
                 />
@@ -98,9 +66,10 @@ export default function ChatMessageField() {
                 {/* Send or Voice */}
                 {message.trim() ? (
                     <button
-                        onClick={() => setMessage("")}
+                        onClick={() => send("text")}
                         className="mb-0.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-primary text-primary-foreground transition-all hover:bg-primary-hover active:scale-95"
                         aria-label="Send message"
+                        disabled={!canSend}
                     >
                         <Send className="size-4" />
                     </button>
@@ -118,3 +87,4 @@ export default function ChatMessageField() {
         </div>
     );
 }
+

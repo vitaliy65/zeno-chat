@@ -1,20 +1,15 @@
-import { useAppDispatch } from "@/store/hooks";
-import { findUsersByUsername } from "@/store/slices/user/UserAsyncThunks";
 import { Search } from "lucide-react";
 import { KeyboardEvent, useState } from "react";
 import UsersSearchList from "./UsersSearchList";
-import { User } from "@/types/user";
+import { useUserSearch } from "@/hooks/useUserSearch";
 
 export default function SearchBlock() {
-    const [searchUser, setSearchUser] = useState("");
     const [searchOpen, setSearchOpen] = useState(false)
-    const [findedUsers, setFindedUsers] = useState<User[]>([]);
-
-    const dispatch = useAppDispatch();
+    const { query, setQuery, results, search, clear } = useUserSearch();
 
     const handleChatSearch = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.code === "Enter" && searchUser.length != 0) {
-            dispatch(findUsersByUsername(searchUser)).then(res => { setFindedUsers(res.payload as User[]); });
+        if (e.code === "Enter") {
+            search();
         }
     }
 
@@ -34,19 +29,19 @@ export default function SearchBlock() {
                 {searchOpen && (
                     <input
                         autoFocus
-                        value={searchUser}
-                        onChange={(e) => setSearchUser(e.target.value)}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={handleChatSearch}
                         placeholder="Search users, messages..."
                         className="h-9 flex-1 bg-transparent pr-3 text-sm text-foreground placeholder:text-muted-foreground outline-none"
                     />
                 )}
             </div>
-            <UsersSearchList users={findedUsers} />
-            {findedUsers.length > 0 && (
+            <UsersSearchList users={results} />
+            {results.length > 0 && (
                 <div
                     className="fixed inset-0 w-screen h-screen z-10"
-                    onClick={() => setFindedUsers([])}
+                    onClick={clear}
                 />
             )}
         </div>

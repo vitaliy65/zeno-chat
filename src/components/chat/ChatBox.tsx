@@ -1,17 +1,11 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchMoreMessages, markChatAsRead } from "@/store/slices/chat/ChatAsyncThunks";
-import { Message } from "@/types/message";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { MessageBubble } from "./MessageBubble";
-interface MessageGroup {
-    sender: "me" | "them";
-    senderName?: string;
-    senderAvatar?: string;
-    messages: Message[];
-}
+import { groupMessagesBySender } from "@/lib/chatUtils";
 
 export default function ChatBox() {
     const currentUserId = useAppSelector((state) => state.user.user?.id);
@@ -65,39 +59,7 @@ export default function ChatBox() {
         }
     };
 
-    // Группируем только подряд идущие сообщения одного и того же отправителя
-    const groupMessages = useCallback(
-        (messages: Message[]): MessageGroup[] => {
-            const groups: MessageGroup[] = [];
-
-            for (const msg of messages) {
-                const sender = msg.senderId === currentUserId ? "me" : "them";
-
-                const last = groups[groups.length - 1];
-
-                if (
-                    last &&
-                    last.sender === sender &&
-                    last.senderName === msg.senderName &&
-                    last.senderAvatar === msg.senderAvatar
-                ) {
-                    last.messages.push(msg);
-                } else {
-                    groups.push({
-                        sender: sender,
-                        senderName: msg.senderName,
-                        senderAvatar: msg.senderAvatar,
-                        messages: [msg],
-                    });
-                }
-            }
-
-            return groups;
-        },
-        [currentUserId]
-    );
-
-    const groups = groupMessages(messages);
+    const groups = groupMessagesBySender(messages, currentUserId);
 
     return (
         <div

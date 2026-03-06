@@ -3,6 +3,7 @@
 import { ChatPreview } from "@/types/chat";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { formatTime } from "@/lib/utils";
+import { UserStatus } from "@/types/user";
 
 interface ChatListItemProps {
     preview: ChatPreview;
@@ -11,7 +12,11 @@ interface ChatListItemProps {
 }
 
 export function ChatListItem({ preview, selected = false, onClick }: ChatListItemProps) {
-    if (!preview.user) return
+    if (!preview.user) return null;
+
+    const status = preview.user.status ?? UserStatus.offline;
+    const statusClass =
+        status === UserStatus.online ? "bg-chat-online" : "bg-chat-offline";
 
     return (
         <button
@@ -33,7 +38,7 @@ export function ChatListItem({ preview, selected = false, onClick }: ChatListIte
                     </AvatarFallback>
                 </Avatar>
                 <span
-                    className={`absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-background-elevated ${preview.user.status === "online" ? "bg-chat-online" : "bg-chat-offline"}`}
+                    className={`absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-background-elevated ${statusClass}`}
                 />
             </div>
 
@@ -42,7 +47,7 @@ export function ChatListItem({ preview, selected = false, onClick }: ChatListIte
                     <p className="truncate text-sm font-medium">{preview.user.username}</p>
                     <span className="ml-1 shrink-0 text-[10px] text-muted-foreground">{formatTime(preview.lastMessage?.createdAt)}</span>
                 </div>
-                <p className="truncate text-xs text-muted-foreground">{preview.lastMessage?.text}</p>
+                <p className="truncate text-xs text-muted-foreground">{preview.lastMessage?.type === 'text' ? preview.lastMessage?.text : preview.lastMessage?.fileName}</p>
             </div>
 
             {preview.unreadCount > 0 && (

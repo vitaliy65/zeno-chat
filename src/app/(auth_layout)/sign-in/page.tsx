@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { FormField } from "@/components/auth/FormField"
 import { getFirebaseErrorMessage } from "@/lib/errorHandler"
 import { AuthAnimatedForm } from "@/components/auth/AuthAnimatedForm"
+import { ROUTES } from "@/constants/routes"
 
 export default function SignIn() {
     const [email, setEmail] = useState("")
@@ -25,11 +26,11 @@ export default function SignIn() {
             onSubmit={handleSubmit}
             loading={loading}
             link={{
-                to: "/register",
+                to: ROUTES.REGISTER,
                 label: "Register",
                 prompt: "Don't have an account?"
             }}
-            onSuccessRedirect="/"
+            onSuccessRedirect={ROUTES.HOME}
         >
             <FormField
                 id="email"

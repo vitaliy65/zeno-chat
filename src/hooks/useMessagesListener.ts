@@ -42,6 +42,5 @@ export function useMessagesListener(chats: Chat[] | undefined) {
     return () => {
       unsubscribes.forEach((unsub) => unsub());
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chats?.length, selectedChatId, dispatch]);
+  }, [chats, selectedChatId, dispatch]);
 }

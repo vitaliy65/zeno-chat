@@ -99,9 +99,11 @@ export class ChatModel {
         const nowStr = new Date().toISOString();
         const msgPayload: Omit<Message, "id"> = {
             ...messageFields,
+            fileName: messageFields.fileName || "",
             createdAt: nowStr,
             isRead: false,
         };
+
         const message = await MessageModel.addMessage(chatId!, msgPayload);
 
         await updateDoc(doc(db, "chats", chatId!), {
