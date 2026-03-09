@@ -46,7 +46,7 @@ export const loginUser = createAsyncThunk<
 
 // Register user
 export const registerUser = createAsyncThunk<
-    ResultUser,
+    void,
     RegisterPayload,
     { rejectValue: string }
 >(

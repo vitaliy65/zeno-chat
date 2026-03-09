@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { AuthUser, UserStatus } from "../../../types/user";
+import type { User, UserStatus } from "../../../types/user";
 import { loginUser, logout, registerUser, tryAutoLogin, updateCurrentUser } from "./UserAsyncThunks";
 
 interface UserState {
-    user: AuthUser | null;
+    user: User | null;
     loading: boolean;
     error: string | null;
 }
@@ -18,7 +18,7 @@ const userSlice = createSlice({
     name: "user",
     initialState,
     reducers: {
-        setUser(state, action: PayloadAction<AuthUser | null>) {
+        setUser(state, action: PayloadAction<User | null>) {
             state.user = action.payload;
         },
         updateStatus(state, action: PayloadAction<UserStatus>) {
@@ -34,7 +34,7 @@ const userSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(loginUser.fulfilled, (state, action: PayloadAction<AuthUser>) => {
+            .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
                 state.user = action.payload;
                 state.loading = false;
                 state.error = null;
@@ -47,11 +47,6 @@ const userSlice = createSlice({
             // --------------- registerUser ---------------
             .addCase(registerUser.pending, (state) => {
                 state.loading = true;
-                state.error = null;
-            })
-            .addCase(registerUser.fulfilled, (state, action: PayloadAction<AuthUser>) => {
-                state.user = action.payload;
-                state.loading = false;
                 state.error = null;
             })
             .addCase(registerUser.rejected, (state, action) => {
@@ -79,7 +74,7 @@ const userSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(tryAutoLogin.fulfilled, (state, action: PayloadAction<AuthUser | null>) => {
+            .addCase(tryAutoLogin.fulfilled, (state, action: PayloadAction<User | null>) => {
                 state.user = action.payload;
                 state.loading = false;
                 state.error = null;
@@ -100,7 +95,7 @@ const userSlice = createSlice({
             )
             .addCase(
                 updateCurrentUser.fulfilled,
-                (state, action: PayloadAction<AuthUser>) => {
+                (state, action: PayloadAction<User>) => {
                     state.user = action.payload;
                     state.loading = false;
                     state.error = null;

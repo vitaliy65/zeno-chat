@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { User } from "@/types/user";
-import AvatarBlock from "./AvatarBlock";
 import { createChat } from "@/store/slices/chat/ChatAsyncThunks";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import Spinner from "@/components/Spinner";
