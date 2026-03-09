@@ -1,15 +1,17 @@
 "use client"
 import { ReactNode } from 'react'
-import ProfileContainer from '../profile/ProfileContainer'
+import ProfileModal from '../profile/ProfileModal'
 import { useAppSelector } from '@/store/hooks'
+import NewGroupModal from '../chatList/Form/NewGroupModal'
 
 export default function ModalsProvider({ children }: { children: ReactNode }) {
-    const { modalOpen } = useAppSelector(s => s.profile)
+    const { openModal } = useAppSelector(s => s.modals)
 
     return (
         <>
             {children}
-            {modalOpen && <ProfileContainer />}
+            {openModal === "profile" && <ProfileModal />}
+            {openModal === "newGroup" && <NewGroupModal />}
         </>
     )
 }

@@ -12,7 +12,7 @@ import useMediaQuery from "./useMediaQuery";
 export function useChatList() {
   const dispatch = useAppDispatch();
 
-  const currentUserId = useAppSelector((state) => state.user.user?.id);
+  const currentUser = useAppSelector((state) => state.user.user);
   const { fetchChats: chatsLoading } = useAppSelector(
     (state) => state.chat.loading
   );
@@ -23,11 +23,12 @@ export function useChatList() {
   const { isOpen } = useAppSelector((s) => s.MobileChatNodal);
 
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!currentUser?.id) return;
 
-    dispatch(fetchFriends({ currentUserId }));
-    dispatch(fetchChats({ userId: currentUserId }));
-  }, [currentUserId, dispatch]);
+    dispatch(fetchFriends({ currentUserId: currentUser.id }));
+    dispatch(fetchChats({ userChatIds: currentUser.chats }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id, dispatch]);
 
   const previews: ChatPreview[] = useMemo(
     () =>
@@ -40,7 +41,7 @@ export function useChatList() {
         const unreadCount =
           chat.messages?.filter(
             (message) =>
-              !message.isRead && message.senderId !== currentUserId
+              !message.isRead && message.senderId !== currentUser?.id
           ).length || 0;
 
         return {
@@ -50,7 +51,7 @@ export function useChatList() {
           unreadCount,
         };
       }),
-    [chats, friends, currentUserId]
+    [chats, friends, currentUser?.id]
   );
 
   const selectChat = (preview: ChatPreview) => {

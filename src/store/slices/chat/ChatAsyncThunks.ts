@@ -3,16 +3,17 @@ import type { Chat } from "@/types/chat";
 import type { Message } from "@/types/message";
 import { FirebaseError } from "firebase/app";
 import { chatService } from "@/services/chatService";
+import { UserChat } from "@/types/user";
 
 export type MessageFieldsToSend = Omit<Message, 'id' | 'isRead' | 'createdAt'> & { toId: string; };
 
 export const fetchChats = createAsyncThunk<
     Chat[],
-    { userId: string }>(
+    { userChatIds: UserChat[] }>(
         "chat/fetchChats",
-        async ({ userId }, { rejectWithValue }) => {
+        async ({ userChatIds }, { rejectWithValue }) => {
             try {
-                const chats = await chatService.getChatsForUser(userId, 50);
+                const chats = await chatService.getChatsForUser(userChatIds, 50);
                 return chats;
             } catch (error) {
                 if (error instanceof FirebaseError) {

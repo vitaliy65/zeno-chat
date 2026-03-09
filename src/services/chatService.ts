@@ -3,10 +3,11 @@ import { MessageModel } from "@/models/MessageModel";
 import type { Chat } from "@/types/chat";
 import type { Message } from "@/types/message";
 import type { MessageFieldsToSend } from "@/store/slices/chat/ChatAsyncThunks";
+import { UserChat } from "@/types/user";
 
 export const chatService = {
-  getChatsForUser(userId: string, messagesLimit = 50): Promise<Chat[]> {
-    return ChatModel.fetchChatsForUser(userId, { messagesLimit });
+  getChatsForUser(userChatIds: UserChat[], messagesLimit = 50): Promise<Chat[]> {
+    return ChatModel.fetchChatsForUser(userChatIds, { messagesLimit });
   },
 
   async createChatBetweenUsers(

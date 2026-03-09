@@ -3,19 +3,20 @@ export interface User {
     username: string;
     avatarUrl?: string;
     status?: UserStatus;
+    chats: UserChat[];
+    groups: UserGroup[];
     lastSeenAt?: string; // ISO
     createdAt: string;   // ISO
 }
+
+export interface UserChat { chatId: string; isPined: boolean; pinOrder: number; };
+export interface UserGroup { groupId: string; isPined: boolean; pinOrder: number };
 
 export enum UserStatus {
     "online" = "online",
     "offline" = "offline",
     "away" = "away"
 };
-
-export interface AuthUser extends User {
-    email: string;
-}
 
 
 // payloads for login and register

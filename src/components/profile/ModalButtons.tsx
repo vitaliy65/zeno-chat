@@ -1,6 +1,6 @@
 import { useAppDispatch } from '@/store/hooks'
 import { Edit2, X } from 'lucide-react'
-import { closeModal } from '@/store/slices/profile/ProfileSlice'
+import { closeModal } from '@/store/slices/profile/modalSlice'
 
 export default function ModalButtons() {
     const dispatch = useAppDispatch()

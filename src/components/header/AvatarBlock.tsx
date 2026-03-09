@@ -2,7 +2,7 @@ import { User } from "@/types/user";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/user/UserAsyncThunks";
-import { toggleModal } from "@/store/slices/profile/ProfileSlice";
+import { toggleModal } from "@/store/slices/profile/modalSlice";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
@@ -15,7 +15,7 @@ export default function AvatarBlock({ user }: { user: User }) {
     };
 
     const handleToggleProfile = () => {
-        dispatch(toggleModal());
+        dispatch(toggleModal('profile'));
     };
 
     return (

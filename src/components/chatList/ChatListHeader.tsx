@@ -1,5 +1,6 @@
+import { useAppDispatch } from '@/store/hooks'
+import { openModal } from '@/store/slices/profile/modalSlice';
 import { Plus, Search, Users } from 'lucide-react'
-import React from 'react'
 
 interface ChatListHeaderProps {
     input: string
@@ -7,6 +8,8 @@ interface ChatListHeaderProps {
 }
 
 export default function ChatListHeader({ input, onChange }: ChatListHeaderProps) {
+    const dispatch = useAppDispatch();
+
     return (
         <div className="flex flex-col gap-3 p-3">
             {/* Search */}
@@ -26,7 +29,8 @@ export default function ChatListHeader({ input, onChange }: ChatListHeaderProps)
                     <Plus className="size-3.5" />
                     New Chat
                 </button>
-                <button className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-background-surface px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+                <button onClick={() => dispatch(openModal('newGroup'))}
+                    className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-background-surface px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
                     <Users className="size-3.5" />
                     New Group
                 </button>
